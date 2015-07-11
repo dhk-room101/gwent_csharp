@@ -1,0 +1,128 @@
+﻿<mvvm:MVVMWindow x:Class="Gwent.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding DataContext.Title, ElementName=LayoutRoot}"
+        xmlns:converters="clr-namespace:Gwent.Converters"
+        xmlns:pb="clr-namespace:PushBindingExtension"
+        xmlns:mvvm="clr-namespace:MVVMSidekick.Views;assembly=MVVMSidekick"        
+        xmlns:vm="clr-namespace:Gwent.ViewModels"
+        Width="708" Height="400">
+     <FrameworkElement.Resources>
+        <vm:MainWindow_ViewModel x:Key="MainVM"/>
+        <converters:PercentageConverter x:Key="PercentageConverter"/>
+     </FrameworkElement.Resources>
+     <Grid x:Name="LayoutRoot" DataContext="{StaticResource MainVM}">
+          <pb:PushBindingManager.PushBindings>
+               <!-- DataContext PushBindings -->
+               <pb:PushBinding TargetProperty="ActualHeight" Path="ObservedHeight"/>
+               <pb:PushBinding TargetProperty="ActualWidth" Path="ObservedWidth"/>
+          </pb:PushBindingManager.PushBindings>
+          <Grid.Background>
+               <ImageBrush Stretch="Fill" ImageSource="Images/background.jpg" 
+                           AlignmentY="Top" AlignmentX="Center"/>
+          </Grid.Background>
+          <Grid.ColumnDefinitions>
+               <ColumnDefinition
+                    Width="0.259*"/>
+               <ColumnDefinition
+                    Width="0.536*"/>
+               <ColumnDefinition
+                    Width="0.205*"/>
+          </Grid.ColumnDefinitions>
+          <Grid Grid.Column="0" x:Name="gridStats"
+            Height="auto">
+               <DockPanel>
+                    <Border DockPanel.Dock="Right" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                    </Border>
+               </DockPanel>
+          </Grid>
+          <Grid Grid.Column="1" x:Name="gridMiddle"
+            Width="auto"
+            Height="auto">
+               <Grid.RowDefinitions>
+                    <RowDefinition
+                    Height="0.768*"/>
+                    <RowDefinition
+                    Height="0.232*"/>
+               </Grid.RowDefinitions>
+               <Grid Grid.Row="0" x:Name="battlefield">
+                    <Grid.RowDefinitions>
+                         <RowDefinition
+                    Height="0.5*"/>
+                         <RowDefinition
+                    Height="0.5*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" x:Name="AI">
+                         <Grid.RowDefinitions>
+                              <RowDefinition
+                                   Height="0.3333*"/>
+                              <RowDefinition
+                                   Height="0.3333*"/>
+                              <RowDefinition
+                                   Height="0.3333*"/>
+                         </Grid.RowDefinitions>
+                         <DockPanel Grid.Row="0" x:Name="AISiege">
+                              <Border DockPanel.Dock="Top" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="1" x:Name="AIRange">
+                              <Border BorderThickness="1" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="2" x:Name="AIMelee">
+                              <Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                    </Grid>
+                    <Grid Grid.Row="1" x:Name="Player">
+                         <Grid.RowDefinitions>
+                              <RowDefinition
+                                   Height="0.3333*"/>
+                              <RowDefinition
+                                   Height="0.3333*"/>
+                              <RowDefinition
+                                   Height="0.3333*"/>
+                         </Grid.RowDefinitions>
+                         <DockPanel Grid.Row="0" x:Name="PlayerMelee">
+                              <Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="1" x:Name="PlayerRange">
+                              <Border BorderThickness="1" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel x:Name="PlayerSiege" Grid.Row="2">
+                              <Border DockPanel.Dock="Top" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                                   <ItemsControl ItemsSource="{Binding PlayerSiegeCards}">
+                                        <ItemsControl.ItemsPanel>
+                                             <ItemsPanelTemplate>
+                                                  <VirtualizingStackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                                             </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                             <DataTemplate>
+                                                  <ContentControl Content="{Binding Face}"/>
+                                             </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                   </ItemsControl>
+                              </Border>
+                         </DockPanel>
+                    </Grid>
+               </Grid>
+               <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding ObservedHeight, StringFormat={}Current: {0}}"/>
+               <Grid Grid.Row="1" x:Name="playerDeck" Width="auto">
+                    <DockPanel>
+                         <Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                         </Border>
+                    </DockPanel>
+               </Grid>
+          </Grid>
+          <Grid Grid.Column="2" x:Name="gridDecks"
+            Height="auto">
+               <DockPanel>
+                    <Border DockPanel.Dock="Right" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                    </Border>
+               </DockPanel>
+          </Grid>
+     </Grid>
+</mvvm:MVVMWindow>

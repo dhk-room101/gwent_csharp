@@ -205,8 +205,7 @@ namespace Gwent.Models
 
           private void updateDrawOrder()
           {
-               throw new NotImplementedException();
-               //overlapping?
+               Console.WriteLine("cardholder: update draw order not implemented yet, overlapping needed");
           }
 
           protected int cardSorter(CardSlot slot1, CardSlot slot2)
@@ -389,6 +388,12 @@ namespace Gwent.Models
           public void clearAllCards()
           {
                cardSlotsList = new List<CardSlot>();
+          }
+
+          public int uniqueID
+          {
+               get { return _uniqueID; }
+               set { _uniqueID = value; }
           }
      }
 }

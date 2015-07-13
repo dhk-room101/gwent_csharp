@@ -28,7 +28,7 @@ namespace Gwent.Models
 
           protected void on_state_about_to_update()
           {
-               Console.WriteLine("human player controller: state about to update not implemented yet");
+               //Console.WriteLine("human player controller: state about to update not implemented yet");
                /*if (_currentZoomedHolder && !mcChoiceDialog.visible) 
                {
                    closeZoomCB();

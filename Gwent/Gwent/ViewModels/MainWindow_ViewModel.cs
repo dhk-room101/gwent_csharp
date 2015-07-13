@@ -18,17 +18,147 @@ using System.Windows.Media.Imaging;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 using Gwent.Models;
+using System.IO;
+using System.Xml.XPath;
+using System.Xml.Linq;
 
 namespace Gwent.ViewModels
 {
      public class MainWindow_ViewModel : ViewModelBase<MainWindow_ViewModel>
      {
-          GwintGameFlowController gameFlowController;
+          //public var mcMessageQueue:W3MessageQueue;
+          //public var mcChoiceDialog:W3ChoiceDialog;
+          //public var mcEndGameDialog:GwintEndGameDialog;
+          //public var btnSkipTurn:InputFeedbackButton;
+          //public var mcCloseBtn:ConditionalCloseButton;
+          //public var mcTutorials:GwintTutorial;
+
+          public bool tutorialsOn = false;
+          private const int SKIP_TURN_HOLD_DELAY = 1000;
+          public GwintGameFlowController gameFlowController;
+          public GwintPlayerRenderer mcPlayer1Renderer;
+          public GwintPlayerRenderer mcPlayer2Renderer;
+          public GwintDeckRenderer mcP1DeckRenderer;
+          public GwintDeckRenderer mcP2DeckRenderer;
+          public GwintBoardRenderer mcBoardRenderer;
+          public CardFXManager mcCardFXManager;
+          public static MainWindow_ViewModel mSingleton;//GwintGameMenu
+          public CardManager _cardManager;
+          
           public MainWindow_ViewModel()
           {
                PlayerSiegeCards = new ObservableCollection<Card>();
                gameFlowController = new GwintGameFlowController();
+
+               _cardManager = CardManager.getInstance();
+               
+               //handle card template from XML
+               getCardTemplates();
+
+               //board renderer
+               mcBoardRenderer = new GwintBoardRenderer();
+               _cardManager.boardRenderer = mcBoardRenderer;
+
+               //players renderers
+               mcPlayer1Renderer = new GwintPlayerRenderer { playerID = 0 };
+               mcPlayer2Renderer = new GwintPlayerRenderer { playerID = 1 };
+               
+               _cardManager.playerRenderers.Add(mcPlayer1Renderer);
+               _cardManager.playerRenderers.Add(mcPlayer2Renderer);
+
+               mSingleton = this;
                //Previous();
+          }
+
+          private void getCardTemplates()
+          {
+               string gwent_cards = MainWindow.gamePath + "\\def_gwint_cards_final.xml";
+               if (File.Exists(gwent_cards))
+               {
+                    var doc = new XPathDocument(gwent_cards);
+                    var nav = doc.CreateNavigator();
+                    var locations = nav.Select("/redxml/custom/gwint_card_definitions_final");
+                    while (locations.MoveNext() == true)
+                    {
+                         var cards = locations.Current.Select("card");
+                         while (cards.MoveNext() == true)
+                         {
+                              int index = Convert.ToInt32(cards.Current.GetAttribute("index", ""));
+                              string title = cards.Current.GetAttribute("title", "");
+                              string description = cards.Current.GetAttribute("description", "");
+                              int power = Convert.ToInt32(cards.Current.GetAttribute("power", ""));
+                              string picture = cards.Current.GetAttribute("picture", "");
+                              int faction_index = CardTemplate.factionStringToInt(cards.Current.GetAttribute("faction_index", ""));
+                              int typeArray = 0;
+
+                              var xml_type_flags = cards.Current.Select("type_flags");
+                              List<int> type_flags = new List<int>();
+                              while (xml_type_flags.MoveNext() == true)
+                              {
+                                   var xml_flag = xml_type_flags.Current.Select("flag");
+                                   while (xml_flag.MoveNext() == true)
+                                   {
+                                        int flag = CardTemplate.typeStringToInt(xml_flag.Current.GetAttribute("name", ""));
+                                        type_flags.Add(flag);
+                                   }
+                              }
+
+                              if (type_flags.Count > 0)
+                              {
+                                   typeArray = type_flags.ElementAt(0);
+                              }
+
+                              if (type_flags.Count > 1)
+                              {
+                                   for (var i = 1; i < type_flags.Count; i++)
+                                   {
+                                        typeArray |= type_flags.ElementAt(i);
+                                   }
+                              }
+                              
+                              var xml_effect_flags = cards.Current.Select("effect_flags");
+                              List<int> effect_flags = new List<int>();
+                              while (xml_effect_flags.MoveNext() == true)
+                              {
+                                   var xml_flag = xml_effect_flags.Current.Select("flag");
+                                   while (xml_flag.MoveNext() == true)
+                                   {
+                                        int flag = CardTemplate.effectStringToInt(xml_flag.Current.GetAttribute("name", ""));
+                                        effect_flags.Add(flag);
+                                   }
+                              }
+
+                              var xml_summonFlags = cards.Current.Select("summonFlags");
+                              List<int> summonFlags = new List<int>();
+                              while (xml_summonFlags.MoveNext() == true)
+                              {
+                                   var xml_card = xml_summonFlags.Current.Select("card");
+                                   while (xml_card.MoveNext() == true)
+                                   {
+                                        int card = Convert.ToInt32(xml_card.Current.GetAttribute("id", ""));
+                                        summonFlags.Add(card);
+                                   }
+                              }
+
+                              CardTemplate template = new CardTemplate
+                              {
+                                   index = index,
+                                   power = power,
+                                   title = title,
+                                   description = description,
+                                   imageLoc = picture,
+                                   factionIdx = faction_index,
+                                   typeArray = typeArray,
+                                   effectFlags = effect_flags,
+                                   summonFlags = summonFlags
+                              };
+
+                              _cardManager._cardTemplates[index] = template;
+
+                              //Console.WriteLine("something");
+                         }
+                    }
+               }
           }
 
           public void Previous()

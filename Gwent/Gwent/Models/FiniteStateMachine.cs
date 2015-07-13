@@ -13,7 +13,7 @@ namespace Gwent.Models
           private String currentStateName = "";
           private String previousStateName = "";
           private String nextState = "";
-          private Action disallowStateChangeFunc;
+          private bool disallowStateChangeFunc;
           private Timer updateTimer;
 
         public FiniteStateMachine()
@@ -27,15 +27,15 @@ namespace Gwent.Models
 
         private void updateStates(Object source = null, ElapsedEventArgs e = null)
           {
-               if (nextState != currentStateName && disallowStateChangeFunc != null)
-               /* disallowStateChangeFunc() == true?)*/
+               if (nextState != currentStateName && disallowStateChangeFunc)
                {
+                    Console.WriteLine("finite state machine: next and current are different, but disallow is true");
                     return;
                }
                if (nextState != currentStateName && stateList[nextState] != null)
                {
                     Console.WriteLine("GFX - [FSM] Switching from: {0} to: {1}", currentStateName, nextState);
-                    if (currentStateName != "" && stateList[currentStateName] != null && stateList[currentStateName].leaveStateCallback != null)
+                    if (currentState != "" && stateList[currentStateName] != null && stateList[currentStateName].leaveStateCallback != null)
                     {
                          stateList[currentStateName].leaveStateCallback();
                     }
@@ -53,6 +53,25 @@ namespace Gwent.Models
                if (stateList[currentStateName].updateStateCallback != null)
                {
                     stateList[currentStateName].updateStateCallback();
+               }
+               if (nextState != currentStateName && disallowStateChangeFunc)
+               {
+                    Console.WriteLine("finite state machine: next and current are different, but disallow is true #2");
+                    return;
+               }
+               if (nextState != currentStateName && stateList[nextState] != null)
+               {
+                    Console.WriteLine("GFX - [FSM] Switching from: {0} to: {1}  |Round2", currentStateName, nextState);
+                    if (stateList[currentStateName] != null && stateList[currentStateName].leaveStateCallback != null)
+                    {
+                         stateList[currentStateName].leaveStateCallback();
+                    }
+                    previousStateName = currentStateName;
+                    currentStateName = nextState;
+                    if (stateList[nextState] != null && stateList[nextState].enterStateCallback != null)
+                    {
+                         stateList[nextState].enterStateCallback();
+                    }
                }
           }
 
@@ -102,7 +121,7 @@ namespace Gwent.Models
              get { return previousStateName; }
         }
 
-        public Action pauseOnStateChangeIfFunc
+        public bool pauseOnStateChangeIfFunc
         {
             set {disallowStateChangeFunc = value;}
         }

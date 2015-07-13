@@ -78,9 +78,9 @@ namespace Gwent.Models
 
           protected void state_update_Initializing()
           {
-               if (CardManager.getInstance() != null &&
+               /*if (CardManager.getInstance() != null &&
                    CardManager.getInstance().cardTemplatesReceived &&
-                   CardFXManager.getInstance() != null)
+                   CardFXManager.getInstance() != null)*/
                {
                     stateMachine.ChangeState("Tutorials");
                }
@@ -102,7 +102,7 @@ namespace Gwent.Models
                playerControllers[CardManager.PLAYER_2].boardRenderer = cardManager.boardRenderer;
                playerControllers[CardManager.PLAYER_1].playerRenderer = cardManager.playerRenderers[CardManager.PLAYER_1];
                playerControllers[CardManager.PLAYER_2].playerRenderer = cardManager.playerRenderers[CardManager.PLAYER_2];
-               stateMachine.pauseOnStateChangeIfFunc = () => shouldDisallowStateChangeFunc();
+               stateMachine.pauseOnStateChangeIfFunc = shouldDisallowStateChangeFunc();
                Console.WriteLine("game flow controller: skip button not implemented yet!");
                /*if (_skipButton != null) 
                {
@@ -711,7 +711,8 @@ namespace Gwent.Models
                {
                    return true;
                }
-               return mcMessageQueue.ShowingMessage() || CardFXManager.getInstance().isPlayingAnyCardFX() || mcChoiceDialog.isShown() || CardTweenManager.getInstance().isAnyCardMoving();*/
+               return mcMessageQueue.ShowingMessage() || CardFXManager.getInstance().isPlayingAnyCardFX() || mcChoiceDialog.isShown() || CardTweenManager.getInstance().isAnyCardMoving();
+                */
                Console.WriteLine("game flow controller: should disallow state change function not implemented yet!");
                return false;
           }

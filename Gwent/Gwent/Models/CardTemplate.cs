@@ -562,5 +562,160 @@ namespace Gwent.Models
                }
                return "None";
           }
+
+          public static int typeStringToInt(string typeString)
+          {
+               switch(typeString)
+               {
+                    case "TYPE_MELEE":
+                         {
+                              return CardType_Melee;
+                         }
+                    case "TYPE_RANGED":
+                         {
+                              return CardType_Ranged;
+                         }
+                    case "TYPE_SIEGE":
+                         {
+                              return CardType_Siege;
+                         }
+                    case "TYPE_CREATURE":
+                         {
+                              return CardType_Creature;
+                         }
+                    case "TYPE_WEATHER":
+                         {
+                              return CardType_Weather;
+                         }
+                    case "TYPE_SPELL":
+                         {
+                              return CardType_Spell;
+                         }
+                    case "TYPE_ROW_MODIFIER":
+                         {
+                              return CardType_Row_Modifier;
+                         }
+                    case "TYPE_HERO":
+                         {
+                              return CardType_Hero;
+                         }
+                    case "TYPE_SPY":
+                         {
+                              return CardType_Spy;
+                         }
+                    case "TYPE_FRIENDLY_EFFECT":
+                         {
+                              return CardType_Friendly_Effect;
+                         }
+                    case "TYPE_GLOBAL_EFFECT":
+                         {
+                              return CardType_Global_Effect;
+                         }
+                    default:
+                         {
+                              //return CardType_None;
+                              throw new ArgumentException("needs a string that has a return type!");
+                         }
+               }
+          }
+
+          public static int factionStringToInt(string factionString)
+          {
+               switch (factionString)
+               {
+                    case "F_NEUTRAL":
+                         {
+                              return FactionId_Neutral;
+                         }
+                    case "F_NO_MANS_LAND":
+                         {
+                              return FactionId_No_Mans_Land;
+                         }
+                    case "F_NILFGAARD":
+                         {
+                              return FactionId_Nilfgaard;
+                         }
+                    case "F_NORTHERN_KINGDOM":
+                         {
+                              return FactionId_Northern_Kingdom;
+                         }
+                    case "F_SCOIATAEL":
+                         {
+                              return FactionId_Scoiatael;
+                         }
+                    default:
+                         {
+                              //return FactionId_Error;
+                              throw new ArgumentException("needs a string that has a return faction!");
+                         }
+               }
+          }
+
+          public static int effectStringToInt(string effectString)
+          {
+               switch (effectString)
+               {
+                    case "EFFECT_NONE":
+                         {
+                              return CardEffect_None;
+                         }
+                    case "EFFECT_MELEE":
+                         {
+                              return CardEffect_Melee;
+                         }
+                    case "EFFECT_RANGED":
+                         {
+                              return CardEffect_Ranged;
+                         }
+                    case "EFFECT_SIEGE":
+                         {
+                              return CardEffect_Siege;
+                         }
+                    case "EFFECT_UNSUMMON_DUMMY":
+                         {
+                              return CardEffect_UnsummonDummy;
+                         }
+                    case "EFFECT_HORN":
+                         {
+                              return CardEffect_Horn;
+                         }
+                    case "CP_MELEE_SCORCH":
+                         {
+                              return CardEffect_MeleeScorch;
+                         }
+                    case "EFFECT_SCORCH":
+                         {
+                              return CardEffect_Scorch;
+                         }
+                    case "EFFECT_CLEAR_SKY":
+                         {
+                              return CardEffect_ClearSky;
+                         }
+                    case "EFFECT_SUMMON_CLONES":
+                         {
+                              return CardEffect_SummonClones;
+                         }
+                    case "EFFECT_IMPROVE_NEIGHBOURS":
+                         {
+                              return CardEffect_ImproveNeighbours;
+                         }
+                    case "EFFECT_NURSE":
+                         {
+                              return CardEffect_Nurse;
+                         }
+                    case "EFFECT_DRAW_X2":
+                         {
+                              return CardEffect_Draw2;
+                         }
+                    case "EFFECT_SAME_TYPE_MORALE":
+                         {
+                              return CardEffect_SameTypeMorale;
+                         }
+                    default:
+                         {
+                              throw new ArgumentException("needs a string that has a return effect!");
+                         }
+               }
+          }
      }
 }

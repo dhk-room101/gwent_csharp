@@ -1,4 +1,5 @@
 ﻿/* movieclips/sounds/text */
+//TO DO boardRendererRef?
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,6 +55,22 @@ namespace Gwent.Models
           public GwintBoardRenderer()
           {
                allCardSlotInstances = new Dictionary<int, CardSlot>();
+
+               updateRowScores(0, 0, 0, 0, 0, 0);
+
+               fillRenderersList();
+               
+               /*if (mcTransactionTooltip) 
+               {
+                   mcTransactionTooltip.visible = false;
+                   mcTransactionTooltip.alpha = 0;
+               }*/
+
+               //setupCardHolders();//not needed?
+
+               //not needed?
+               cardManager = CardManager.getInstance();
+               CardManager.getInstance().boardRenderer = this;
           }
 
           protected virtual void OnChanged( EventArgs e)
@@ -379,6 +396,72 @@ namespace Gwent.Models
                {
                    mcGodCardHolder.removeChildAt(0);
                }*/
+          }
+
+          protected void fillRenderersList()
+          {
+               allRenderers = new List<GwintCardHolder>();
+
+               mcWeather = new GwintCardHolder { cardHolderID = 9, playerID = 2, uniqueID = 1 };
+               mcP1LeaderHolder = new GwintCardHolder { cardHolderID = 10, playerID = 0, uniqueID = 2 };
+               mcP2LeaderHolder = new GwintCardHolder { cardHolderID = 10, playerID = 1, uniqueID = 3 };
+               mcP1Deck = new GwintCardHolder { cardHolderID = 0, playerID = 0, uniqueID = 4 };
+               mcP2Deck = new GwintCardHolder { cardHolderID = 0, playerID = 1, uniqueID = 5 };
+               mcP1Hand = new GwintCardHolder { cardHolderID = 1, playerID = 0, uniqueID = 6 };
+               mcP2Hand = new GwintCardHolder { cardHolderID = 1, playerID = 1, uniqueID = 7 };
+               mcP1Graveyard = new GwintCardHolder { cardHolderID = 2, playerID = 0, uniqueID = 8 };
+               mcP2Graveyard = new GwintCardHolder { cardHolderID = 2, playerID = 1, uniqueID = 9 };
+               mcP1Siege = new GwintCardHolder { cardHolderID = 3, playerID = 0, uniqueID = 10 };
+               mcP2Siege = new GwintCardHolder { cardHolderID = 3, playerID = 1, uniqueID = 11 };
+               mcP1Range = new GwintCardHolder { cardHolderID = 4, playerID = 0, uniqueID = 12 };
+               mcP2Range = new GwintCardHolder { cardHolderID = 4, playerID = 1, uniqueID = 13 };
+               mcP1Melee = new GwintCardHolder { cardHolderID = 5, playerID = 0, uniqueID = 14 };
+               mcP2Melee = new GwintCardHolder { cardHolderID = 5, playerID = 1, uniqueID = 15 };
+               mcP1SiegeModif = new GwintCardHolder { cardHolderID = 6, playerID = 0, uniqueID = 16 };
+               mcP2SiegeModif = new GwintCardHolder { cardHolderID = 6, playerID = 1, uniqueID = 17 };
+               mcP1RangeModif = new GwintCardHolder { cardHolderID = 7, playerID = 0, uniqueID = 18 };
+               mcP2RangeModif = new GwintCardHolder { cardHolderID = 7, playerID = 1, uniqueID = 19 };
+               mcP1MeleeModif = new GwintCardHolder { cardHolderID = 8, playerID = 0, uniqueID = 20 };
+               mcP2MeleeModif = new GwintCardHolder { cardHolderID = 8, playerID = 1, uniqueID = 21 };
+
+               allRenderers.Add(mcWeather);
+               allRenderers.Add(mcP1LeaderHolder);
+               allRenderers.Add(mcP2LeaderHolder);
+               allRenderers.Add(mcP1Deck);
+               allRenderers.Add(mcP2Deck);
+               allRenderers.Add(mcP1Hand);
+               allRenderers.Add(mcP2Hand);
+               allRenderers.Add(mcP1Graveyard);
+               allRenderers.Add(mcP2Graveyard);
+               allRenderers.Add(mcP1Siege);
+               allRenderers.Add(mcP2Siege);
+               allRenderers.Add(mcP1Range);
+               allRenderers.Add(mcP2Range);
+               allRenderers.Add(mcP1Melee);
+               allRenderers.Add(mcP2Melee);
+               allRenderers.Add(mcP1SiegeModif);
+               allRenderers.Add(mcP2SiegeModif);
+               allRenderers.Add(mcP1RangeModif);
+               allRenderers.Add(mcP2RangeModif);
+               allRenderers.Add(mcP1MeleeModif);
+               allRenderers.Add(mcP2MeleeModif);
+
+               allRenderers.Sort(cardHolderSorter);
+               
+               //extends slot base
+               /*int index = 0;
+               while (index < allRenderers.Count)
+               {
+                    allRenderers[index].boardRendererRef = this;
+                    _renderers.Add(allRenderers[index]);
+                    ++index;
+               }
+               _renderersCount = allRenderers.Count;*/
+          }
+
+          protected int cardHolderSorter(GwintCardHolder cardHolder1, GwintCardHolder cardHolder2)
+          {
+               return cardHolder1.uniqueID - cardHolder2.uniqueID;
           }
      }
 }

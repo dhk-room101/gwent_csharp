@@ -164,7 +164,8 @@ namespace Gwent.Models
           {
                set
                {
-                    txtCardCount.Text = value.ToString();
+                    Console.WriteLine("player renderer: value {0}", value);
+                    //txtCardCount.Text = value.ToString();
                }
           }
 

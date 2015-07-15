@@ -14,7 +14,7 @@ namespace Gwent.Models
           //public var mcEndGameDialog:GwintEndGameDialog;
           //protected var _skipButton:red.game.witcher3.controls.InputFeedbackButton;
           
-          private Random random = new Random();
+          private SafeRandom random = new SafeRandom();
           public const string COIN_TOSS_POPUP_NEEDED = "Gameflow.event.Cointoss.needed";
           public Action closeMenuFunctor;
           public List<BasePlayerController> playerControllers;
@@ -249,7 +249,8 @@ namespace Gwent.Models
                List<CardInstance> playerCardsList = null;
                _mulliganDecided = false;
                _mulliganCardsCount = 0;
-               cardManager.shuffleAndDrawCards();
+               //disable during debug?
+               //cardManager.shuffleAndDrawCards();
                playerCardsList = cardManager.getCardInstanceList(CardManager.CARD_LIST_LOC_HAND, CardManager.PLAYER_1);
                Console.WriteLine("game flow controller: states  begin Mulligan not implemented yet ");
                //mcChoiceDialog.showDialogCardInstances(playerCardsList, handleAcceptMulligan, handleDeclineMulligan, "[[gwint_can_choose_card_to_redraw]]");
@@ -268,6 +269,9 @@ namespace Gwent.Models
           {
                _mulliganDecided = true;
                stateMachine.ChangeState("RoundStart");
+               gameStarted = true;
+               playerControllers[CardManager.PLAYER_1].cardZoomEnabled = true;
+               playerControllers[CardManager.PLAYER_2].cardZoomEnabled = true;
                Console.WriteLine("game flow controller: state update Mulligan not implemented");
                /*if (_mulliganDecided && (!mcTutorials.visible || mcTutorials.isPaused)) 
             {
@@ -282,11 +286,12 @@ namespace Gwent.Models
 
           protected void state_begin_RoundStart()
           {
-               Console.WriteLine("game flow controller: state begin around start not fully implemented");
+               Console.WriteLine("game flow controller: state begin round start not fully implemented");
                //mcMessageQueue.PushMessage("[[gwint_round_start]]", "round_start");
                allNeutralInRound = true;
                playedCreaturesInRound = false;
-               if (!(lastRoundWinner == CardManager.PLAYER_INVALID) && cardManager.playerDeckDefinitions[lastRoundWinner].getDeckFaction() == CardTemplate.FactionId_Northern_Kingdom)
+               //checking northern ability for last round winner
+               if (lastRoundWinner != CardManager.PLAYER_INVALID && cardManager.playerDeckDefinitions[lastRoundWinner].getDeckFaction() == CardTemplate.FactionId_Northern_Kingdom)
                {
                     //mcMessageQueue.PushMessage("[[gwint_northern_ability_triggered]]", "north_ability", onShowNorthAbilityShown, null);
                     //GwintGameMenu.mSingleton.playSound("gui_gwint_northern_realms_ability");
@@ -296,32 +301,30 @@ namespace Gwent.Models
           protected void state_update_RoundStart()
           {
                //if (!mcMessageQueue.ShowingMessage()) 
-               //{
-               Console.WriteLine("game flow controller: state update drowned start tutorial not implemented");
+               Console.WriteLine("game flow controller: state update round start tutorial not implemented");
                /*if (mcTutorials.visible && !sawRoundStartTutorial) 
                {
                    sawRoundStartTutorial = true;
                    mcTutorials.continueTutorial();
-               }
+               }*/
                playerControllers[CardManager.PLAYER_1].resetCurrentRoundStatus();
                playerControllers[CardManager.PLAYER_2].resetCurrentRoundStatus();
-               if (playerControllers[currentPlayer].currentRoundStatus != BasePlayerController.ROUND_PLAYER_STATUS_DONE) 
-               {
-                   stateMachine.ChangeState("PlayerTurn");
-               }*/
-               //else 
-               //  {
-               currentPlayer = currentPlayer != CardManager.PLAYER_1 ? CardManager.PLAYER_1 : CardManager.PLAYER_2;
                if (playerControllers[currentPlayer].currentRoundStatus != BasePlayerController.ROUND_PLAYER_STATUS_DONE)
                {
                     stateMachine.ChangeState("PlayerTurn");
                }
                else
                {
-                    stateMachine.ChangeState("ShowingRoundResult");
+                    currentPlayer = currentPlayer != CardManager.PLAYER_1 ? CardManager.PLAYER_1 : CardManager.PLAYER_2;
+                    if (playerControllers[currentPlayer].currentRoundStatus != BasePlayerController.ROUND_PLAYER_STATUS_DONE)
+                    {
+                         stateMachine.ChangeState("PlayerTurn");
+                    }
+                    else
+                    {
+                         stateMachine.ChangeState("ShowingRoundResult");
+                    }
                }
-               //  }
-               //}
           }
 
           protected void state_begin_PlayerTurn()

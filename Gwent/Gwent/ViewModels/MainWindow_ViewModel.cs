@@ -33,13 +33,14 @@ namespace Gwent.ViewModels
           //public var mcCloseBtn:ConditionalCloseButton;
           //public var mcTutorials:GwintTutorial;
 
+          public bool debug = true;
           public bool tutorialsOn = false;
           private const int SKIP_TURN_HOLD_DELAY = 1000;
           public GwintGameFlowController gameFlowController;
           public GwintPlayerRenderer mcPlayer1Renderer;
           public GwintPlayerRenderer mcPlayer2Renderer;
-          public GwintDeckRenderer mcP1DeckRenderer;
-          public GwintDeckRenderer mcP2DeckRenderer;
+          public GwintDeckRenderer mcP1DeckRenderer = new GwintDeckRenderer();
+          public GwintDeckRenderer mcP2DeckRenderer = new GwintDeckRenderer();
           public GwintBoardRenderer mcBoardRenderer;
           public CardFXManager mcCardFXManager;
           public static MainWindow_ViewModel mSingleton;//GwintGameMenu
@@ -51,23 +52,103 @@ namespace Gwent.ViewModels
                gameFlowController = new GwintGameFlowController();
 
                _cardManager = CardManager.getInstance();
-               
+               _cardManager.cardValues = new GwintCardValues();
+
+               //create empty decks
+               createDecks();
+
                //handle card template from XML
                getCardTemplates();
+
+               if (debug)
+               {
+                    randomizeFaction();
+               }
 
                //board renderer
                mcBoardRenderer = new GwintBoardRenderer();
                _cardManager.boardRenderer = mcBoardRenderer;
 
                //players renderers
-               mcPlayer1Renderer = new GwintPlayerRenderer { playerID = 0 };
-               mcPlayer2Renderer = new GwintPlayerRenderer { playerID = 1 };
+               mcPlayer1Renderer = new GwintPlayerRenderer { playerID = 0, playerName = "player" };
+               mcPlayer2Renderer = new GwintPlayerRenderer { playerID = 1, playerName = "AI" };
                
                _cardManager.playerRenderers.Add(mcPlayer1Renderer);
                _cardManager.playerRenderers.Add(mcPlayer2Renderer);
 
+               //test
+               if (debug)
+               {
+                    //testCardsCalculations();
+               }
+
                mSingleton = this;
                //Previous();
+          }
+
+          private void createDecks()
+          {
+               _cardManager.completeDecks = new List<GwintDeck>[2];
+               _cardManager.completeDecks[0] = new List<GwintDeck>();
+               _cardManager.completeDecks[1] = new List<GwintDeck>();
+
+               //complete decks for player ID 0
+               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "Neutral", selectedKingIndex = 0});
+               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "NorthKingdom", selectedKingIndex = 1 });
+               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "Nilfgaard", selectedKingIndex = 2 });
+               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "Scoiatael", selectedKingIndex = 3 });
+               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "NoMansLand", selectedKingIndex = 4 });
+
+               //complete decks for player ID 1
+               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "Neutral", selectedKingIndex = 0 });
+               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "NorthKingdom", selectedKingIndex = 1 });
+               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "Nilfgaard", selectedKingIndex = 2 });
+               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "Scoiatael", selectedKingIndex = 3 });
+               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "NoMansLand", selectedKingIndex = 4 });
+          }
+
+          private void randomizeCards(int playerID)
+          {
+               SafeRandom random = new SafeRandom();
+               int i = 0;
+               while (i < 10)
+               {
+                    bool found = false;
+                    int cardIndex = random.Next(_cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.Count);
+                    int cardID = _cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.ElementAt(cardIndex);
+                    foreach (int idx in _cardManager.playerDeckDefinitions[playerID].cardIndices)
+                    {
+                         if (idx == cardID && found == false)
+                         {
+                              found = true;
+                              Console.WriteLine("randomize cards: match found for player {3}, try again {0}, {1}, {2}", i, idx, cardID, playerID);
+                         }
+                    }
+                    if (found == false)
+                    {
+                         _cardManager.playerDeckDefinitions[playerID].cardIndices.Add(cardID);
+                         ++i;
+                    }
+               }
+          }
+
+          private void randomizeFaction()
+          {
+               SafeRandom random = new SafeRandom();
+               int randomFaction;
+
+               randomFaction = random.Next(1,5);//P1
+               _cardManager.playerDeckDefinitions[CardManager.PLAYER_1] = _cardManager.completeDecks[CardManager.PLAYER_1].ElementAt(randomFaction);
+               randomizeCards(CardManager.PLAYER_1);
+
+               randomFaction = random.Next(1,5);//P2
+               _cardManager.playerDeckDefinitions[CardManager.PLAYER_2] = _cardManager.completeDecks[CardManager.PLAYER_2].ElementAt(randomFaction);
+               randomizeCards(CardManager.PLAYER_2);
+               
+               foreach (GwintDeck deck in _cardManager.playerDeckDefinitions)
+               {
+                    Console.WriteLine("player faction is {0}, with selectedKingIndex {1}", deck.deckName, deck.selectedKingIndex);
+               }
           }
 
           private void getCardTemplates()
@@ -155,10 +236,75 @@ namespace Gwent.ViewModels
 
                               _cardManager._cardTemplates[index] = template;
 
+                              addToDeck(template);
                               //Console.WriteLine("something");
                          }
                     }
+
+                    if (debug)
+                    {
+                         for (var i = 0; i < _cardManager.completeDecks.Length; i++)
+                         {
+                              foreach (GwintDeck deck in _cardManager.completeDecks[i])
+                              {
+                                   Console.WriteLine("deck {0} for player {1} has {2} cards", deck.deckName, i, deck.cardIndicesInDeck.Count);
+                              }
+                         }
+                    }
                }
+          }
+
+          private void addToDeck(CardTemplate template)
+          {
+               string factionString = template.getFactionString();
+               for (var i = 0; i < _cardManager.completeDecks.Length; i++)
+               {
+                    foreach (GwintDeck deck in _cardManager.completeDecks[i])
+                    {
+                         if (deck.deckName == factionString)
+                         {
+                              deck.cardIndicesInDeck.Add(template.index);
+                         }
+                    }
+               }
+          }
+
+          protected void testCardsCalculations()
+          {
+               CardInstance cardInstance = null;
+               CardTemplate cardTemplate = null;
+               int counter = 0;
+               List<CardInstance> cardInstanceList = new List<CardInstance>();
+               Console.WriteLine("GFX --------------------------------------------------------- Commencing card test ---------------------------------------------------------");
+               Console.WriteLine("GFX ================================================== Creating temporary card instances ===================================================");
+               Dictionary<int, CardTemplate> templateDictionary = _cardManager._cardTemplates;
+               foreach (KeyValuePair<int, CardTemplate> entry in templateDictionary)
+               {
+                    cardTemplate = entry.Value;//entry.Key is int
+                    cardInstance = new CardInstance();
+                    cardInstance.templateId = cardTemplate.index;
+                    cardInstance.templateRef = cardTemplate;
+                    cardInstance.owningPlayer = CardManager.PLAYER_1;
+                    cardInstance.listsPlayer = CardManager.PLAYER_1;
+                    cardInstance.instanceId = 100;
+                    cardInstanceList.Add(cardInstance);
+               }
+               Console.WriteLine("GFX - Successfully created: {0} card instances", cardInstanceList.Count);
+               counter = 0;
+               while (counter < cardInstanceList.Count)
+               {
+                    Console.WriteLine("GFX - Checking Card with ID: {0} --------------------------", cardInstanceList[counter].templateId);
+                    Console.WriteLine("GFX ---------------------------------------------------------");
+                    Console.WriteLine("GFX - template Ref: " + cardInstanceList[counter].templateRef.title);
+                    Console.WriteLine("GFX - instance info: " + cardInstanceList[counter].toString());
+                    Console.WriteLine("GFX - recalculating optimal transaction for card");
+                    cardInstanceList[counter].recalculatePowerPotential(_cardManager);
+                    Console.WriteLine("GFX - successfully recalculated following power info: ");
+                    Console.WriteLine("GFX - " + cardInstanceList[counter].getOptimalTransaction().toString());
+                    ++counter;
+               }
+               Console.WriteLine("GFX ================================ Successfully Finished Test of Card Instances ====================================");
+               Console.WriteLine("GFX ------------------------------------------------------------------------------------------------------------------");
           }
 
           public void Previous()

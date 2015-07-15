@@ -25,9 +25,13 @@ namespace Gwent.Models
           public Storyboard mcScore;
           public Storyboard mcWinningRound;
           
+          //not needed in standalone?
           protected string _playerNameDataProvider = "INVALID_STRING_PARAM!";
+
           protected int _playerID;
+          protected string _playerName;
           private int _score = -1;
+          protected int _numCardsInHand;
           protected int _lastSetPlayerLives = -1;
           private bool _turnActive = false;
           protected bool passedShown = false;
@@ -37,6 +41,7 @@ namespace Gwent.Models
                _playerID = CardManager.PLAYER_INVALID;
           }
 
+          //shows Passed?
           public void showPassed(bool show)
           {
                /*if (txtPassed) 
@@ -109,7 +114,8 @@ namespace Gwent.Models
                }
           }
 
-          public string playerName
+          //original function
+          /*public string playerName
           {
                get
                {
@@ -119,6 +125,19 @@ namespace Gwent.Models
                set
                {
                     txtPlayerName.Text = value;
+               }
+          }*/
+
+          public string playerName
+          {
+               get
+               {
+                    return _playerName;
+               }
+
+               set
+               {
+                    _playerName = value;
                }
           }
 
@@ -162,9 +181,11 @@ namespace Gwent.Models
 
           public int numCardsInHand
           {
+               get { return _numCardsInHand; }
                set
                {
-                    Console.WriteLine("player renderer: value {0}", value);
+                    _numCardsInHand = value;
+                    //Console.WriteLine("player renderer: value {0}", value);
                     //txtCardCount.Text = value.ToString();
                }
           }

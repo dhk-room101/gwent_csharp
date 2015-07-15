@@ -1,9 +1,4 @@
 d:\Work\VS13\Gwent\Gwent\bin\Gwent.exe.config
-d:\Work\VS13\Gwent\Gwent\obj\Debug\MainWindow.g.cs
-d:\Work\VS13\Gwent\Gwent\obj\Debug\App.g.cs
-d:\Work\VS13\Gwent\Gwent\obj\Debug\GeneratedInternalTypeHelper.g.cs
-d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent_MarkupCompile.cache
-d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent_MarkupCompile.lref
 d:\Work\VS13\Gwent\Gwent\bin\Gwent.exe
 d:\Work\VS13\Gwent\Gwent\bin\Gwent.pdb
 d:\Work\VS13\Gwent\Gwent\bin\MVVMSidekick.dll
@@ -30,6 +25,11 @@ d:\Work\VS13\Gwent\Gwent\bin\ko\System.Windows.Interactivity.resources.dll
 d:\Work\VS13\Gwent\Gwent\bin\ru\System.Windows.Interactivity.resources.dll
 d:\Work\VS13\Gwent\Gwent\bin\zh-Hans\System.Windows.Interactivity.resources.dll
 d:\Work\VS13\Gwent\Gwent\bin\zh-Hant\System.Windows.Interactivity.resources.dll
+d:\Work\VS13\Gwent\Gwent\obj\Debug\MainWindow.g.cs
+d:\Work\VS13\Gwent\Gwent\obj\Debug\App.g.cs
+d:\Work\VS13\Gwent\Gwent\obj\Debug\GeneratedInternalTypeHelper.g.cs
+d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent_MarkupCompile.cache
+d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent_MarkupCompile.lref
 d:\Work\VS13\Gwent\Gwent\obj\Debug\MainWindow.baml
 d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.g.resources
 d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.Properties.Resources.resources

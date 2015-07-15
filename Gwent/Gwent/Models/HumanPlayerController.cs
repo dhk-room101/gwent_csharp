@@ -74,7 +74,7 @@ namespace Gwent.Models
 
           protected void state_begin_ChoosingCard()
           {
-               Console.WriteLine("human player controller: state_begin_ChoosingCard Needs skip button");
+               //Console.WriteLine("human player controller: state_begin_ChoosingCard Needs skip button");
                CardLeaderInstance cardLeader = null;
                /*if (_skipButton) 
                {
@@ -87,10 +87,12 @@ namespace Gwent.Models
                     cardLeader = CardManager.getInstance().getCardLeader(playerID);
                     if (cardLeader != null && cardLeader.canBeUsed)
                     {
+                         //use leader?
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.leaderCard, scaleform.clik.constants.NavigationCode.GAMEPAD_X, red.core.constants.KeyCode.X, "gwint_use_leader");
                     }
                     if (_handHolder.cardSlotsList.Count > 0)
                     {
+                         //common_select
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.apply, scaleform.clik.constants.NavigationCode.GAMEPAD_A, red.core.constants.KeyCode.ENTER, "panel_button_common_select");
                     }
                     if (_boardRenderer.getSelectedCard() != null && cardZoomEnabled)

@@ -74,10 +74,10 @@ namespace Gwent.Models
 
           public const int FactionId_Error = -1;
           public const int FactionId_Neutral = 0;
-          public const int FactionId_No_Mans_Land = 1;
+          public const int FactionId_Northern_Kingdom = 1;
           public const int FactionId_Nilfgaard = 2;
-          public const int FactionId_Northern_Kingdom = 3;
-          public const int FactionId_Scoiatael = 4;
+          public const int FactionId_Scoiatael = 3;
+          public const int FactionId_No_Mans_Land = 4;
 
           public CardTemplate()
           {

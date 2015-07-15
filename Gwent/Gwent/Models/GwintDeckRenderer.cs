@@ -10,6 +10,7 @@ namespace Gwent.Models
      public class GwintDeckRenderer
      {
           private int _cardCount = 0;
+          private string _factionString;
           //public var mcCardCount:flash.display.MovieClip;
           //public var mcDeckTop:flash.display.MovieClip;
           
@@ -23,6 +24,7 @@ namespace Gwent.Models
                set
                {
                     _cardCount = value;
+                    Console.WriteLine("deck renderer: card count overlapping/text not implemented yet");
                     /*if (_cardCount != 0) 
                     {
                         gotoAndStop(Math.min(50, _cardCount));
@@ -41,9 +43,11 @@ namespace Gwent.Models
                }
           }
 
+          //TO DO display deck top image based on faction string
           public string factionString
           {
-               set { ;}
+               get { return _factionString; }
+               set { _factionString = value; }
                //mcDeckTop.gotoAndStop(arg1);
           }
      }

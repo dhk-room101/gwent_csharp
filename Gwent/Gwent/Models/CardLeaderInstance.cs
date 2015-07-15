@@ -14,7 +14,7 @@ namespace Gwent.Models
           protected int numToPick;
           protected int numPickedSoFar;
           private bool _canBeUsed = true;
-          private Random random = new Random();
+          private SafeRandom random = new SafeRandom();
 
           private Action applyClearWeatherAction;
           
@@ -168,6 +168,7 @@ namespace Gwent.Models
 
           public override void finalizeSetup()
           {
+               base.finalizeSetup();
                if (templateRef == null || templateRef.getFirstEffect() == CardTemplate.CardEffect_None)
                {
                     throw new ArgumentException("GFX [ERROR] tried to finalize card leader with invalid template info - " + templateId);

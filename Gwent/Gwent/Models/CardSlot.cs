@@ -162,7 +162,7 @@ namespace Gwent.Models
                string typeString;
                //string placementTypeString;
                //TextBox title = null;//Title
-               Console.WriteLine("GFX - CardSlot setting card up with cardID: " + cardIndex + ", and template: " + cardTemplate);
+               Console.WriteLine("GFX - CardSlot setting card up with cardID: " + cardIndex + ", and template: " + cardTemplate.title);
                if (cardTemplate != null)
                {
                     typeString = cardTemplate.getTypeString();

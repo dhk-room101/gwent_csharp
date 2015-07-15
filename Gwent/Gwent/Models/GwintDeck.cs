@@ -10,7 +10,7 @@ namespace Gwent.Models
      public class GwintDeck
      {
           public string deckName;
-          public List<int> cardIndices;
+          public List<int> cardIndices = new List<int>();//debug?
           public int selectedKingIndex;
           public int specialCard;
           public bool isUnlocked = false;
@@ -20,7 +20,7 @@ namespace Gwent.Models
           public Action onCardChangedCallback;
           private GwintDeckRenderer _deckRenderer;
           public List<int> cardIndicesInDeck;
-          private Random random = new Random();
+          private SafeRandom random = new SafeRandom();
 
           public GwintDeck()
           {

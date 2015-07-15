@@ -20,7 +20,7 @@ namespace Gwent.Models
           {
                stateList = new Dictionary<string,FSMState>();
 
-               updateTimer = new Timer(30);
+               updateTimer = new Timer(1000);
                updateTimer.Elapsed += updateStates;
                updateTimer.Enabled = true;
           }

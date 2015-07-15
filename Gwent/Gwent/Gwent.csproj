@@ -115,6 +115,7 @@
     <Compile Include="Models\GwintPlayerRenderer.cs" />
     <Compile Include="Models\GwintRoundResult.cs" />
     <Compile Include="Models\HumanPlayerController.cs" />
+    <Compile Include="Models\SafeRandom.cs" />
     <Compile Include="PushBinding\FreezableBinding.cs" />
     <Compile Include="PushBinding\PushBinding.cs" />
     <Compile Include="PushBinding\PushBindingCollection.cs" />

@@ -1,4 +1,5 @@
 ﻿/* movieclips/sounds/text */
+//TO DO onFinishedMovingIntoHolder
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace Gwent.Models
           public Dictionary<int, CardTemplate> _cardTemplates = null;
           private Dictionary<int, CardInstance> _cardInstances;
           protected static CardManager _instance;
-          private Random random = new Random();
+          private SafeRandom random = new SafeRandom();
           private int lastInstanceID = 0;
           private int _heroDrawSoundsAllowed = -1;
           private int _normalDrawSoundsAllowed = -1;
@@ -54,7 +55,9 @@ namespace Gwent.Models
           private List<CardInstance>[] cardListSeigeModifier;
           private List<CardInstance>[] cardListRangedModifier;
           private List<CardInstance>[] cardListMeleeModifier;
-          
+
+          public List<GwintDeck>[] completeDecks;
+
           public CardManager()
           {
                playerRenderers = new List<GwintPlayerRenderer>();
@@ -224,7 +227,25 @@ namespace Gwent.Models
                {
                     return null;
                }
-               return (CardLeaderInstance)leader[0];
+               return convertToLeader(leader[0]);
+          }
+
+          public CardLeaderInstance convertToLeader(CardInstance instance)
+          {
+               CardLeaderInstance result = new CardLeaderInstance();
+               result.effectedByCardsRefList = instance.effectedByCardsRefList;
+               result.effectingCardsRefList = instance.effectingCardsRefList;
+               result.inList = instance.inList;
+               result.instanceId = instance.instanceId;
+               result.lastListApplied = instance.lastListApplied;
+               result.lastListPlayerApplied = instance.lastListPlayerApplied;
+               result.listsPlayer = instance.listsPlayer;
+               result.owningPlayer = instance.owningPlayer;
+               result.playSummonedFX = instance.playSummonedFX;
+               result.powerChangeCallback = instance.powerChangeCallback;
+               result.templateId = instance.templateId;
+               result.templateRef = instance.templateRef;
+               return result;
           }
 
           public CardTemplate getCardTemplate(int id)
@@ -1257,14 +1278,50 @@ namespace Gwent.Models
 
           public void spawnLeaders()
           {
+               //should be CardLeaderInstance?
                int kingIndex = 0;
                CardInstance leader = null;
+               List<int> leadersList;
+
+               //P1
                kingIndex = playerDeckDefinitions[PLAYER_1].selectedKingIndex;
-               leader = spawnCardInstance(kingIndex, PLAYER_1);
-               addCardInstanceToList(leader, CARD_LIST_LOC_LEADER, PLAYER_1);
+               leadersList = new List<int>();
+               foreach (int cardID in playerDeckDefinitions[PLAYER_1].cardIndices)
+               {
+                    if (cardID >= kingIndex * 100 && cardID < (kingIndex * 100 + 5))
+                    {
+                         leadersList.Add(cardID);
+                    }
+               }
+               if (leadersList.Count > 0)
+               {
+                    foreach (int leaderID in leadersList)
+                    {
+                         leader = spawnCardInstance(leaderID, PLAYER_1);
+                         Console.WriteLine("leader found {0}, {1}", leader.templateId, leader.templateRef.title);
+                         addCardInstanceToList(leader, CARD_LIST_LOC_LEADER, PLAYER_1);
+                    }
+               }
+
+               //P2
                kingIndex = playerDeckDefinitions[PLAYER_2].selectedKingIndex;
-               leader = spawnCardInstance(kingIndex, PLAYER_2);
-               addCardInstanceToList(leader, CARD_LIST_LOC_LEADER, PLAYER_2);
+               leadersList = new List<int>();
+               foreach (int cardID in playerDeckDefinitions[PLAYER_2].cardIndices)
+               {
+                    if (cardID >= kingIndex * 100 && cardID < (kingIndex * 100 + 5))
+                    {
+                         leadersList.Add(cardID);
+                    }
+               }
+               if (leadersList.Count > 0)
+               {
+                    foreach (int leaderID in leadersList)
+                    {
+                         leader = spawnCardInstance(leaderID, PLAYER_2);
+                         Console.WriteLine("leader found {0}, {1}", leader.templateId, leader.templateRef.title);
+                         addCardInstanceToList(leader, CARD_LIST_LOC_LEADER, PLAYER_2);
+                    }
+               }
           }
 
           public void traceRoundResults()

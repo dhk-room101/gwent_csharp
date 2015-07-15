@@ -30,7 +30,7 @@ namespace Gwent.Models
           protected bool waitingForTimer { get; set; }
           protected Timer waitingTimer { get; set; }//not needed?
           protected bool _currentRoundCritical = false;
-          private Random random = new Random();
+          private SafeRandom random = new SafeRandom();
           protected Action actionWaitingTimerEnded;
 
           public AIPlayerController()

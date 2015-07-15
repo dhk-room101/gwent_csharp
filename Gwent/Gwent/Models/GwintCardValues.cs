@@ -1,4 +1,5 @@
 ﻿/* COMPLETE */
+//TO DO figure out card values, for now they are all ZERO
 using System;
 using System.Collections.Generic;
 using System.Linq;

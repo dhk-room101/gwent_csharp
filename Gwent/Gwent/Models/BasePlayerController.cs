@@ -54,16 +54,14 @@ namespace Gwent.Models
 
           public GwintPlayerRenderer playerRenderer
           {
-               get
-               {
-                    return _playerRenderer;
-               }
-
+               get { return _playerRenderer; }
                set
                {
                     _playerRenderer = value;
-                    GwintDeck deck = CardManager.getInstance().playerDeckDefinitions[_playerRenderer.playerID];
-                    Console.WriteLine("bass player controller: deck namenot implemented yet!");
+                    //TO DO make you better
+                    //the deck line may be moved somewhere else, it is to display the faction image
+                    //GwintDeck deck = CardManager.getInstance().playerDeckDefinitions[_playerRenderer.playerID];
+                    //Console.WriteLine("base player controller: setting player renderer: getting deck name {0} and King index {1}",deck.deckName, deck.selectedKingIndex);
                     //_playerRenderer.txtFactionName.text = deck.getFactionNameString();
                     //_playerRenderer.mcFactionIcon.gotoAndStop(deck.getDeckKingTemplate().getFactionString());
                     _playerRenderer.numCardsInHand = 0;
@@ -231,7 +229,10 @@ namespace Gwent.Models
           {
                get
                {
-                    Console.WriteLine("bass player controller: turn over get");
+                    bool t = _turnOver && (_transactionCard == null);
+                    bool _tc = _transactionCard == null;
+                    //implement this later
+                    //Console.WriteLine("base player controller: turn over get: turnover is {0},_turn over is {1}, and transaction card is empty is {2}",t,_turnOver,_tc);
                     return _turnOver && (_transactionCard == null);
                }
           }

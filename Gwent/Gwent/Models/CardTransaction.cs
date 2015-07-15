@@ -20,5 +20,16 @@ namespace Gwent.Models
                targetSlotID = CardManager.CARD_LIST_LOC_INVALID;
                targetPlayerID = CardManager.PLAYER_INVALID;
           }
+
+          public string toString()
+          {
+               return "[Gwint CardTransaction] " + 
+               "sourceCard:[[[" + sourceCardInstanceRef.templateRef.title + 
+               "]]], targetSlotID:" + targetSlotID + 
+               ", targetPlayerID:" + targetPlayerID + 
+               ", StrategicValue:" + strategicValue.ToString() + 
+               ", PowerChangeResult:" + powerChangeResult.ToString() + 
+               ", targetCardRef:[[[" + targetCardInstanceRef + "]]]";
+          }
      }
 }

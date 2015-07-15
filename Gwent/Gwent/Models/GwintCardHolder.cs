@@ -71,7 +71,8 @@ namespace Gwent.Models
                {
                     return;
                }
-               CardLeaderInstance cardLeader = (CardLeaderInstance)cardSlot.cardInstance;
+               CardManager _cardManager = CardManager.getInstance();
+               CardLeaderInstance cardLeader = _cardManager.convertToLeader(cardSlot.cardInstance);
                if (cardLeader == null)
                {
                     return;
@@ -137,6 +138,11 @@ namespace Gwent.Models
                     argumentCardSlot.selected = false;
                }
                updateWeatherEffects();
+               Console.WriteLine("!!!   argument card slot {0}", argumentCardSlot.cardInstance.templateRef.title);
+               if (localCardSlot != null)
+               {
+                    Console.WriteLine("!!!   local card slot {0}", localCardSlot.cardInstance.templateRef.title);
+               }
                //registerCard(argumentCardSlot);not needed?
           }
 

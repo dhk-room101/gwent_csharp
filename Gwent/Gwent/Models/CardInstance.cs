@@ -22,7 +22,7 @@ namespace Gwent.Models
           public bool playSummonedFX = false;
           public CardTemplate templateRef;
           protected CardTransaction _lastCalculatedPowerPotential;
-          private Random random = new Random();
+          private SafeRandom random = new SafeRandom();
           
           public CardInstance()
           {
@@ -91,17 +91,11 @@ namespace Gwent.Models
 
           public bool canBeCastOn(CardInstance card)
           {
-               if (templateRef.isType(CardTemplate.CardType_Hero) || 
-                    card.templateRef.isType(CardTemplate.CardType_Hero))
+               if (templateRef.isType(CardTemplate.CardType_Hero) || card.templateRef.isType(CardTemplate.CardType_Hero))
                {
                     return false;
                }
-               if (templateRef.hasEffect(CardTemplate.CardEffect_UnsummonDummy) && 
-                    card.templateRef.isType(CardTemplate.CardType_Creature) && 
-                    card.listsPlayer == listsPlayer && 
-                    card.inList != CardManager.CARD_LIST_LOC_HAND && 
-                    card.inList != CardManager.CARD_LIST_LOC_GRAVEYARD && 
-                    card.inList == CardManager.CARD_LIST_LOC_LEADER)
+               if (templateRef.hasEffect(CardTemplate.CardEffect_UnsummonDummy) && card.templateRef.isType(CardTemplate.CardType_Creature) && card.listsPlayer == listsPlayer && !(card.inList == CardManager.CARD_LIST_LOC_HAND) && !(card.inList == CardManager.CARD_LIST_LOC_GRAVEYARD) && !(card.inList == CardManager.CARD_LIST_LOC_LEADER))
                {
                     return true;
                }
@@ -122,6 +116,7 @@ namespace Gwent.Models
                return _lastCalculatedPowerPotential;
           }
 
+          //needs tweaking for card values?
           public virtual void recalculatePowerPotential(CardManager cardManager)
           {
                CardInstance cardInstance1 = null;
@@ -1025,6 +1020,17 @@ namespace Gwent.Models
                     }
                }
                return false;
+          }
+
+          public string toString()
+          {
+               return " powerChange[ " + getOptimalTransaction().powerChangeResult + 
+                    " ] , strategicValue[ " + getOptimalTransaction().strategicValue + 
+                    " ] , CardName[ " + templateRef.title + 
+                    " ] [Gwint CardInstance] instanceID:" + instanceId + 
+                    ", owningPlayer[ " + owningPlayer + 
+                    " ], templateId[ " + templateId + 
+                    " ], inList[ " + inList + " ]";
           }
      }
 }

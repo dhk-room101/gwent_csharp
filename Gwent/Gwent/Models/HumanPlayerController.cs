@@ -1,4 +1,7 @@
-﻿using System;
+﻿//NEEDED
+//tryPutLeaderInTransaction
+//zoomCardToTransaction
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -74,6 +77,7 @@ namespace Gwent.Models
 
           protected void state_begin_ChoosingCard()
           {
+               Console.WriteLine("human player controller: state_begin_ChoosingCard");
                //Console.WriteLine("human player controller: state_begin_ChoosingCard Needs skip button");
                CardLeaderInstance cardLeader = null;
                /*if (_skipButton) 
@@ -87,16 +91,19 @@ namespace Gwent.Models
                     cardLeader = CardManager.getInstance().getCardLeader(playerID);
                     if (cardLeader != null && cardLeader.canBeUsed)
                     {
+                         Console.WriteLine("human player controller:BEGIN card leader can be used YES");
                          //use leader?
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.leaderCard, scaleform.clik.constants.NavigationCode.GAMEPAD_X, red.core.constants.KeyCode.X, "gwint_use_leader");
                     }
                     if (_handHolder.cardSlotsList.Count > 0)
                     {
+                         Console.WriteLine("human player controller:BEGIN hand holder card slot list count bigger than 0 at {0}",_handHolder.cardSlotsList.Count);
                          //common_select
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.apply, scaleform.clik.constants.NavigationCode.GAMEPAD_A, red.core.constants.KeyCode.ENTER, "panel_button_common_select");
                     }
                     if (_boardRenderer.getSelectedCard() != null && cardZoomEnabled)
                     {
+                         Console.WriteLine( "human player controller: BEGIN board renderer has selected card, and card zoom is enabled");
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.zoomCard, scaleform.clik.constants.NavigationCode.GAMEPAD_R2, red.core.constants.KeyCode.RIGHT_MOUSE, "panel_button_common_zoom");
                     }
                }
@@ -104,22 +111,23 @@ namespace Gwent.Models
 
           protected void state_update_ChoosingCard()
           {
+               Console.WriteLine("human player controller: state_update_ChoosingCard");
                CardInstance cardInstance = null;
                bool isCardLeader = false;
-               bool hasEffect = false;
-               bool isType = false;
+               bool hasEffectUnsummonDummy = false;
+               bool isTypeGlobalEffect = false;
                on_state_about_to_update();
                if (_transactionCard != null)
                {
                     cardInstance = CardManager.getInstance().getCardInstance(_transactionCard.instanceId);
                     isCardLeader = cardInstance is CardLeaderInstance;
-                    hasEffect = cardInstance.templateRef.hasEffect(CardTemplate.CardEffect_UnsummonDummy);
-                    isType = cardInstance.templateRef.isType(CardTemplate.CardType_Global_Effect);
-                    if (isCardLeader || isType)
+                    hasEffectUnsummonDummy = cardInstance.templateRef.hasEffect(CardTemplate.CardEffect_UnsummonDummy);
+                    isTypeGlobalEffect = cardInstance.templateRef.isType(CardTemplate.CardType_Global_Effect);
+                    if (isCardLeader || isTypeGlobalEffect)
                     {
                          _stateMachine.ChangeState("WaitConfirmation");
                     }
-                    else if (hasEffect)
+                    else if (hasEffectUnsummonDummy)
                     {
                          _stateMachine.ChangeState("ChoosingTargetCard");
                     }
@@ -293,7 +301,10 @@ namespace Gwent.Models
 
           public override void startTurn()
           {
-               if (CardManager.getInstance().getCardInstanceList(CardManager.CARD_LIST_LOC_HAND, playerID).Count == 0 && !CardManager.getInstance().getCardLeader(playerID).canBeUsed)
+               Console.WriteLine("human player controller: start turn");
+               if (CardManager.getInstance().getCardInstanceList(CardManager.CARD_LIST_LOC_HAND, playerID).Count == 0 && 
+                    CardManager.getInstance().getCardLeader(playerID) == null)
+                    //!CardManager.getInstance().getCardLeader(playerID).canBeUsed)
                {
                     currentRoundStatus = BasePlayerController.ROUND_PLAYER_STATUS_DONE;
                }

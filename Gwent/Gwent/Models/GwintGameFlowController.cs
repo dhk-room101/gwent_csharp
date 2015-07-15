@@ -329,7 +329,7 @@ namespace Gwent.Models
 
           protected void state_begin_PlayerTurn()
           {
-               Console.WriteLine("GFX -#AI# starting player turn for player: " + currentPlayer);
+               Console.WriteLine("GFX -#AI# starting player turn begin for player: " + currentPlayer);
                if (currentPlayer == CardManager.PLAYER_2)
                {
                     //mcMessageQueue.PushMessage("[[gwint_opponent_turn_start_message]]", "Opponents_turn");
@@ -346,6 +346,7 @@ namespace Gwent.Models
 
           protected void state_update_PlayerTurn()
           {
+               Console.WriteLine("GFX -#AI# starting player turn update for player: " + currentPlayer);
                BasePlayerController currentPlayerController = playerControllers[currentPlayer];
                BasePlayerController opponentPlayerController = playerControllers[currentPlayer != CardManager.PLAYER_1 ? CardManager.PLAYER_1 : CardManager.PLAYER_2];
                if (currentPlayerController == null)
@@ -356,11 +357,12 @@ namespace Gwent.Models
                {
                        return;
                }*/
-               if (!sawStartMessage)
+               currentPlayerController.startTurn();
+               /*if (!sawStartMessage)
                {
                     sawStartMessage = true;
                     currentPlayerController.startTurn();
-               }
+               }*/
                if (currentPlayerController.turnOver)
                {
                     /*if (mcTutorials.visible && !sawScoreChangeTutorial) 
@@ -399,6 +401,7 @@ namespace Gwent.Models
 
           protected void state_leave_PlayerTurn()
           {
+               Console.WriteLine("GFX -#AI# ending player turn for player: " + currentPlayer);
                List<CardInstance> creaturesList = null;
                CardTemplate cardTemplate = null;
                int counter = 0;

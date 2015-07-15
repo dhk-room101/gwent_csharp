@@ -36,3 +36,4 @@ d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.Properties.Resources.resources
 d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.csproj.GenerateResource.Cache
 d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.exe
 d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.pdb
+d:\Work\VS13\Gwent\Gwent\obj\Debug\Gwent.csprojResolveAssemblyReference.cache

@@ -35,7 +35,10 @@ namespace Gwent.Models
                get
                {
                     if (CardManager.getInstance().getCardInstanceList(CardManager.CARD_LIST_LOC_HAND, playerID).Count == 0 && 
-                         !CardManager.getInstance().getCardLeader(playerID).canBeUsed)
+                         //!CardManager.getInstance().getCardLeader(playerID).canBeUsed)
+                         //replace the above logic with a simple card leader = null?
+                         //In case the current player doesn't have any leaders cards
+                         CardManager.getInstance().getCardLeader(playerID) == null)
                     {
                          return ROUND_PLAYER_STATUS_DONE;
                     }
@@ -209,6 +212,7 @@ namespace Gwent.Models
           {
                if (currentRoundStatus == ROUND_PLAYER_STATUS_DONE)
                {
+                    Console.WriteLine("base player controller:start turn: round player status Done: returning");
                     return;
                }
                _turnOver = false;

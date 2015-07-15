@@ -227,6 +227,7 @@ namespace Gwent.Models
                {
                     return null;
                }
+               Console.WriteLine("converting to leader {0}, {1}", leader[0].templateId, leader[0].templateRef.title);
                return convertToLeader(leader[0]);
           }
 

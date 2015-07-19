@@ -49,6 +49,8 @@ namespace Gwent.ViewModels
 
           public MainWindow_ViewModel()
           {
+               DefaultSettings();
+               
                InitializeHolders();
 
                gameFlowController = new GwintGameFlowController();
@@ -69,6 +71,13 @@ namespace Gwent.ViewModels
                /*if (debug) { testCardsCalculations(); }*/
 
                mSingleton = this;
+          }
+
+          private void DefaultSettings()
+          {
+               DebugBorder = "0";
+               CardZoomFrameVisibility = "Hidden";
+               SelectedCardSlot = null;
           }
 
           private void InitializeRenderers()
@@ -157,22 +166,23 @@ namespace Gwent.ViewModels
 
           private void randomizeCards(int playerID)
           {
+               bool leaderDrawn = false;
+               int kingIndex = _cardManager.playerDeckDefinitions[playerID].selectedKingIndex;
                SafeRandom random = new SafeRandom();
                int i = 0;
                while (i < 10)
                {
-                    bool found = false;
-                    int cardIndex = random.Next(_cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.Count);
+                    int cardIndex = random.Next(_cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.Count); 
                     int cardID = _cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.ElementAt(cardIndex);
-                    foreach (int idx in _cardManager.playerDeckDefinitions[playerID].cardIndices)
+                    //leader cards
+                    if (cardID >= kingIndex * 100 && cardID < (kingIndex * 100 + 5) && leaderDrawn == false)
                     {
-                         if (idx == cardID && found == false)
-                         {
-                              found = true;
-                              Console.WriteLine("randomize cards: match found for player {3}, try again {0}, {1}, {2}", i, idx, cardID, playerID);
-                         }
+                         leaderDrawn = true;
+                         Console.WriteLine("player {0} leader found {1}", playerID, cardID);
+                         _cardManager.playerDeckDefinitions[playerID].cardIndices.Add(cardID);
+                         ++i;
                     }
-                    if (found == false)
+                    else if (cardID >= (kingIndex * 100 + 5))//regular cards
                     {
                          _cardManager.playerDeckDefinitions[playerID].cardIndices.Add(cardID);
                          ++i;
@@ -381,17 +391,6 @@ namespace Gwent.ViewModels
                PlayerSiegeCards.Add(imageRange);*/
 
                Title = "Gwent";
-
-               ResizeCards();
-          }
-
-          public void ResizeCards()
-          {
-               /*foreach ( Card card in PlayerSiegeCards)
-               {
-                    card.Face.Height = ObservedHeight * 0.1;
-                    card.Face.Width = ObservedWidth * 0.05;
-               }*/
           }
 
           public CardSlot SelectedCardSlot
@@ -408,6 +407,13 @@ namespace Gwent.ViewModels
                               HumanPlayerController hpc = (HumanPlayerController)GwintGameFlowController.getInstance().playerControllers[GwintGameFlowController.getInstance().currentPlayer];
                               hpc.handleCardChosen();
                          }
+                         //show card zoom frame
+                         CardZoomFrameVisibility = "Visible";
+                    }
+                    else
+                    { 
+                         //hide card zoom frame
+                         CardZoomFrameVisibility = "Hidden";
                     }
                }
           }
@@ -697,11 +703,7 @@ namespace Gwent.ViewModels
           public double ObservedHeight
           {
                get { return _ObservedHeightLocator(this).Value; }
-               set 
-               {
-                    _ObservedHeightLocator(this).SetValueAndTryNotify(value);
-                    ResizeCards();
-               }
+               set { _ObservedHeightLocator(this).SetValueAndTryNotify(value); }
           }
 
           #region Property double ObservedHeight Setup
@@ -713,11 +715,7 @@ namespace Gwent.ViewModels
           public double ObservedWidth
           {
                get { return _ObservedWidthLocator(this).Value; }
-               set
-               {
-                    _ObservedWidthLocator(this).SetValueAndTryNotify(value);
-                    ResizeCards();
-               }
+               set { _ObservedWidthLocator(this).SetValueAndTryNotify(value); }
           }
 
           #region Property double ObservedWidth Setup
@@ -726,6 +724,18 @@ namespace Gwent.ViewModels
           static Func<double> _ObservedWidthDefaultValueFactory = null;
           #endregion
 
+          public String CardZoomFrameVisibility
+          {
+               get { return _CardZoomFrameVisibilityLocator(this).Value; }
+               set { _CardZoomFrameVisibilityLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property String CardZoomFrameVisibility Setup
+          protected Property<String> _CardZoomFrameVisibility = new Property<String> { LocatorFunc = _CardZoomFrameVisibilityLocator };
+          static Func<BindableBase, ValueContainer<String>> _CardZoomFrameVisibilityLocator = RegisterContainerLocator<String>("CardZoomFrameVisibility", model => model.Initialize("CardZoomFrameVisibility", ref model._CardZoomFrameVisibility, ref _CardZoomFrameVisibilityLocator, _CardZoomFrameVisibilityDefaultValueFactory));
+          static Func<String> _CardZoomFrameVisibilityDefaultValueFactory = null;
+          #endregion
+          
           public String DebugBorder
           {
                get { return _DebugBorderLocator(this).Value; }

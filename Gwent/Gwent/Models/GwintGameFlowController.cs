@@ -346,7 +346,7 @@ namespace Gwent.Models
 
           protected void state_update_PlayerTurn()
           {
-               Console.WriteLine("GFX -#AI# starting player turn update for player: " + currentPlayer);
+               //Console.WriteLine("GFX -#AI# starting player turn update for player: " + currentPlayer);
                BasePlayerController currentPlayerController = playerControllers[currentPlayer];
                BasePlayerController opponentPlayerController = playerControllers[currentPlayer != CardManager.PLAYER_1 ? CardManager.PLAYER_1 : CardManager.PLAYER_2];
                if (currentPlayerController == null)

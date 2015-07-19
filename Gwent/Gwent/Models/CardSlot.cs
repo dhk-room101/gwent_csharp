@@ -1,4 +1,7 @@
-﻿/* movieclips/sounds/text */
+﻿using Gwent.ViewModels;
+using MVVMSidekick.Reactive;
+using MVVMSidekick.ViewModels;
+/* movieclips/sounds/text */
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +13,7 @@ using System.Windows.Media.Imaging;
 
 namespace Gwent.Models
 {
-     public class CardSlot
+     public class CardSlot : ViewModelBase<CardSlot>
      {
           public Image cardImage { get; set; }
           public Storyboard mcPowerIndicator;
@@ -621,6 +624,48 @@ namespace Gwent.Models
           protected void updateCardPowerText()
           {
                Console.WriteLine("updateCardPowerText not implemented yet!");
+          }
+
+          //Handle commands
+          public CommandModel<ReactiveCommand, String> CommandSelectCard
+          {
+               get { return _CommandSelectCardLocator(this).Value; }
+               set { _CommandSelectCardLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property CommandModel<ReactiveCommand, String> CommandSelectCard Setup
+          protected Property<CommandModel<ReactiveCommand, String>> _CommandSelectCard = new Property<CommandModel<ReactiveCommand, String>> { LocatorFunc = _CommandSelectCardLocator };
+          static Func<BindableBase, ValueContainer<CommandModel<ReactiveCommand, String>>> _CommandSelectCardLocator = RegisterContainerLocator<CommandModel<ReactiveCommand, String>>("CommandSelectCard", model => model.Initialize("CommandSelectCard", ref model._CommandSelectCard, ref _CommandSelectCardLocator, _CommandSelectCardDefaultValueFactory));
+          static Func<BindableBase, CommandModel<ReactiveCommand, String>> _CommandSelectCardDefaultValueFactory =
+              model =>
+              {
+                   var cmd = new ReactiveCommand(canExecute: true) { ViewModel = model };
+                   var vm = CastToCurrentType(model);
+                   cmd.Subscribe(_ =>
+                   {
+                        vm.SelectingCardSlot(vm);
+                   }).DisposeWith(model);
+                   return cmd.CreateCommandModel("ViewResource");
+              };
+          #endregion
+
+          //commands functions
+          private void SelectingCardSlot(CardSlot cardSlot)
+          {
+               MainWindow_ViewModel.mSingleton.SelectedCardSlot = cardSlot;
+               Console.WriteLine("!!!LEFT CLICK!!!");
+          }
+
+          public string power
+          { 
+               get
+               {
+                    if (cardInstance != null)
+                    {
+                         return cardInstance.templateRef.power.ToString();
+                    }
+                    return "0";
+               }
           }
      }
 }

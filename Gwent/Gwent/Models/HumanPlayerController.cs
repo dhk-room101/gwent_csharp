@@ -114,6 +114,17 @@ namespace Gwent.Models
 
           protected void state_update_ChoosingCard()
           {
+               Console.WriteLine("GFX =#AI#=======================================================================================");
+               Console.WriteLine("GFX -#AI#-----------------------------   PLAYER CARDS AT HAND   ------------------------------------");
+               List<CardInstance> cardInstanceList = CardManager.getInstance().getCardInstanceList(CardManager.CARD_LIST_LOC_HAND, playerID);
+               int counter = 0;
+               while (counter < cardInstanceList.Count)
+               {
+                    Console.WriteLine("GFX -#AI# Points[ " + cardInstanceList[counter].templateRef.power + " ], Card - " + cardInstanceList[counter].templateId + "  " + cardInstanceList[counter].templateRef.title);
+                    ++counter;
+               }
+               Console.WriteLine("GFX =#AI#=======================================================================================");
+               
                //Console.WriteLine("human player controller: state_update_ChoosingCard");
                //not needed-handled in card holder class card add/remove functions
                /*if (_handHolder.cardSlotsList.Count != MainWindow_ViewModel.mSingleton.P1HandHolder.Count)
@@ -423,7 +434,7 @@ namespace Gwent.Models
                     currentRoundStatus = BasePlayerController.ROUND_PLAYER_STATUS_DONE; 
                     transactionCard = null;
                     _turnOver = true;
-                    bool temp = turnOver;//this is to jumpstart turnover!
+                    //bool temp = turnOver;//this is to jumpstart turnover!
                     _stateMachine.ChangeState("Idle");
                }
           }

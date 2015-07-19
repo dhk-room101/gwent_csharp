@@ -179,6 +179,10 @@ namespace Gwent.Models
                     if (index != -1)
                     {
                          holder.Remove(cardSlot);
+                         if (MainWindow_ViewModel.mSingleton.SelectedCardSlot == cardSlot)
+                         {
+                              MainWindow_ViewModel.mSingleton.SelectedCardSlot = null;
+                         }
                     }
                }));
           }

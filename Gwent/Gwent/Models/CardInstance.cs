@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Gwent.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -972,6 +973,7 @@ namespace Gwent.Models
 
           public bool canBePlacedInSlot(int listID, int playerID)
           {
+               CardTemplate _t = MainWindow_ViewModel.mSingleton.SelectedCardSlot.cardInstance.templateRef;
                CardManager cardManager = CardManager.getInstance();
                if (listID == CardManager.CARD_LIST_LOC_DECK || listID == CardManager.CARD_LIST_LOC_GRAVEYARD)
                {

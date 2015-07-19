@@ -1,4 +1,5 @@
-﻿/* movieclips/sounds/text */
+﻿using Gwent.ViewModels;
+/* movieclips/sounds/text */
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,35 +114,46 @@ namespace Gwent.Models
                }
           }
 
-          public void cardAdded(CardSlot argumentCardSlot)
+          public void cardAdded(CardSlot cardSlot)
           {
-               CardSlot localCardSlot = null;
+               CardSlot selectedCardSlot = null;
                int index = 0;
                if (selectedCardIdx != -1 && selectedCardIdx < cardSlotsList.Count)
                {
-                    localCardSlot = cardSlotsList[selectedCardIdx];
+                    selectedCardSlot = cardSlotsList[selectedCardIdx];
                }
-               cardSlotsList.Add(argumentCardSlot);
+               cardSlotsList.Add(cardSlot);
                cardSlotsList.Sort(cardSorter);
-               if (localCardSlot != null)
+               
+               //Update observable collection
+               MainWindow_ViewModel.mSingleton.Dispatcher.Invoke((Action)(() =>
                {
-                    index = cardSlotsList.IndexOf(localCardSlot);
+                    var holder = MainWindow_ViewModel.mSingleton.Holders.ElementAt(uniqueID - 1);
+                    holder.Add(cardSlot);
+               }));
+               
+               string cardHolderName = GwintBoardRenderer.getCardHolderByUniqueID(uniqueID);
+               Console.WriteLine("card {0} is added to {1}", cardSlot.cardInstance.templateRef.title, cardHolderName);
+               
+               if (selectedCardSlot != null)
+               {
+                    index = cardSlotsList.IndexOf(selectedCardSlot);
                     if (index != selectedCardIdx)
                     {
                          selectedCardIdx = index;
                     }
                }
                repositionAllCards();//display?
-               argumentCardSlot.activeSelectionEnabled = selected && _cardSelectionEnabled;
-               if (argumentCardSlot.selected)
+               cardSlot.activeSelectionEnabled = selected && _cardSelectionEnabled;
+               if (cardSlot.selected)
                {
-                    argumentCardSlot.selected = false;
+                    cardSlot.selected = false;
                }
                updateWeatherEffects();
-               Console.WriteLine("!!!   argument card slot {0}", argumentCardSlot.cardInstance.templateRef.title);
-               if (localCardSlot != null)
+               Console.WriteLine("!!!   argument card slot {0}", cardSlot.cardInstance.templateRef.title);
+               if (selectedCardSlot != null)
                {
-                    Console.WriteLine("!!!   local card slot {0}", localCardSlot.cardInstance.templateRef.title);
+                    Console.WriteLine("!!!   local card slot {0}", selectedCardSlot.cardInstance.templateRef.title);
                }
                //registerCard(argumentCardSlot);not needed?
           }
@@ -157,6 +169,18 @@ namespace Gwent.Models
                }
                repositionAllCards();
                updateWeatherEffects();
+
+               //Remove from observable collection
+
+               MainWindow_ViewModel.mSingleton.Dispatcher.Invoke((Action)(() =>
+               {
+                    var holder = MainWindow_ViewModel.mSingleton.Holders.ElementAt(uniqueID - 1);
+                    index = holder.IndexOf(cardSlot);
+                    if (index != -1)
+                    {
+                         holder.Remove(cardSlot);
+                    }
+               }));
           }
 
           protected void findCardSelection(bool isSelected)//arguments not needed?

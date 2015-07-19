@@ -1,11 +1,15 @@
-﻿/* movieclips/sounds/text */
+﻿using Gwent.ViewModels;
+/* movieclips/sounds/text */
 //TO DO boardRendererRef?
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Gwent.Models
 {
@@ -222,7 +226,24 @@ namespace Gwent.Models
                     throw new ArgumentException("GFX ---- spawnCardInstance failed because it was called with unknown params, sourceTypeID: " + cardHolderID.ToString() + ", sourcePlayerID: " + playerID.ToString());
                }
                //CardSlot cardSlot = (CardSlot)(new _slotRendererRef());//new instance of card slot model?
-               CardSlot cardSlot = new CardSlot();//placeholder?
+               //handle images for card slot
+               
+               /*Uri uri;
+               Image image = new Image();
+               uri = new Uri("pack://application:,,,/Images/Cards/" + card.templateRef.imageLoc + ".jpg");
+               image.Source = new BitmapImage(uri);*/
+               //MainWindow_ViewModel.mSingleton.
+               //cardImage = image;
+               
+               //CardSlot cardSlot = new CardSlot();//placeholder?
+               MainWindow_ViewModel.mSingleton.Dispatcher.Invoke((Action)(() =>
+               {
+                    CardSlot cardSlotRef = MainWindow_ViewModel.mSingleton.getSlot(card);
+               }));
+
+               CardSlot cardSlot = MainWindow_ViewModel.mSingleton.ReferenceSlot;
+               //CardSlot cardSlot = MainWindow_ViewModel.mSingleton.getSlot(card);
+               
                //cardSlot.useContextMgr = false;//slot base class?
                cardSlot.instanceId = card.instanceId;
                cardSlot.cardState = CardSlot.STATE_BOARD;
@@ -291,7 +312,7 @@ namespace Gwent.Models
           {
                foreach (GwintCardHolder cardHolder in allRenderers)
                {
-                    Console.WriteLine("boards renderer: activate all holders not implemented yet!");
+                    //Console.WriteLine("boards renderer: activate all holders not implemented yet!");
                     /*//TO DO
                     cardHolder.selectable = isSelectable;
                     cardHolder.disableNavigation = false;
@@ -462,6 +483,101 @@ namespace Gwent.Models
           protected int cardHolderSorter(GwintCardHolder cardHolder1, GwintCardHolder cardHolder2)
           {
                return cardHolder1.uniqueID - cardHolder2.uniqueID;
+          }
+
+          public static string getCardHolderByUniqueID(int uniqueID)
+          {
+               switch(uniqueID)
+               {
+                    case 1:
+                         {
+                              return "weather holder";
+                         }
+                    case 2:
+                         {
+                              return "player 1 leader holder";
+                         }
+                    case 3:
+                         {
+                              return "player 2/AI leader holder";
+                         }
+                    case 4:
+                         {
+                              return "player 1 deck holder";
+                         }
+                    case 5:
+                         {
+                              return "player 2/AI deck holder";
+                         }
+                    case 6:
+                         {
+                              return "player 1 hand holder";
+                         }
+                    case 7:
+                         {
+                              return "player 2/AI hand holder";
+                         }
+                    case 8:
+                         {
+                              return "player 1 graveyard holder";
+                         }
+                    case 9:
+                         {
+                              return "player 2/AI graveyard holder";
+                         }
+                    case 10:
+                         {
+                              return "player 1 siege holder";
+                         }
+                    case 11:
+                         {
+                              return "player 2/AI siege holder";
+                         }
+                    case 12:
+                         {
+                              return "player 1 range holder";
+                         }
+                    case 13:
+                         {
+                              return "player 2/AI range holder";
+                         }
+                    case 14:
+                         {
+                              return "player 1 melee holder";
+                         }
+                    case 15:
+                         {
+                              return "player 2/AI melee holder";
+                         }
+                    case 16:
+                         {
+                              return "player 1 siege modifier holder";
+                         }
+                    case 17:
+                         {
+                              return "player 2/AI siege modifier holder";
+                         }
+                    case 18:
+                         {
+                              return "player 1 range modifier holder";
+                         }
+                    case 19:
+                         {
+                              return "player 2/AI range modifier holder";
+                         }
+                    case 20:
+                         {
+                              return "player 1 melee modifier holder";
+                         }
+                    case 21:
+                         {
+                              return "player 2/AI melee modifier holder";
+                         }
+                    default:
+                         {
+                              throw new ArgumentException("unique ID unknown!");
+                         }
+               }
           }
      }
 }

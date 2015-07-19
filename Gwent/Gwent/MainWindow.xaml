@@ -5,11 +5,12 @@
         xmlns:converters="clr-namespace:Gwent.Converters"
         xmlns:pb="clr-namespace:PushBindingExtension"
         xmlns:mvvm="clr-namespace:MVVMSidekick.Views;assembly=MVVMSidekick"        
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         xmlns:vm="clr-namespace:Gwent.ViewModels"
-        Width="708" Height="400">
+        Width="1066" Height="600">
      <FrameworkElement.Resources>
-        <vm:MainWindow_ViewModel x:Key="MainVM"/>
-        <converters:PercentageConverter x:Key="PercentageConverter"/>
+          <vm:MainWindow_ViewModel x:Key="MainVM"/>
+          <converters:PercentageConverter x:Key="PercentageConverter"/>
      </FrameworkElement.Resources>
      <Grid x:Name="LayoutRoot" DataContext="{StaticResource MainVM}">
           <pb:PushBindingManager.PushBindings>
@@ -18,82 +19,294 @@
                <pb:PushBinding TargetProperty="ActualWidth" Path="ObservedWidth"/>
           </pb:PushBindingManager.PushBindings>
           <Grid.Background>
-               <ImageBrush Stretch="Fill" ImageSource="Images/background.jpg" 
-                           AlignmentY="Top" AlignmentX="Center"/>
+               <ImageBrush ImageSource="Images/background.jpg" 
+                           Stretch="Fill" AlignmentY="Top" AlignmentX="Center"/>
           </Grid.Background>
           <Grid.ColumnDefinitions>
-               <ColumnDefinition
-                    Width="0.259*"/>
-               <ColumnDefinition
-                    Width="0.536*"/>
-               <ColumnDefinition
-                    Width="0.205*"/>
+               <ColumnDefinition Width="275*"/>
+               <ColumnDefinition Width="562*"/>
+               <ColumnDefinition Width="221*"/>
           </Grid.ColumnDefinitions>
-          <Grid Grid.Column="0" x:Name="gridStats"
-            Height="auto">
-               <DockPanel>
-                    <Border DockPanel.Dock="Right" BorderThickness="1" BorderBrush="#FFDCDCDC">
+          <!--Players leaders + Weather-->
+          <Grid Grid.Column="0">
+               <!--gridLeft-->
+               <Grid.RowDefinitions>
+                    <RowDefinition Height="218*"/>
+                    <RowDefinition Height="132*"/>
+                    <RowDefinition Height="219*"/>
+               </Grid.RowDefinitions>
+               <DockPanel Grid.Row="0">
+                    <!--AILeaderAndStats-->
+                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                    </Border>
+               </DockPanel>
+               <DockPanel Grid.Row="1">
+                    <!--Weather-->
+                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                    </Border>
+               </DockPanel>
+               <DockPanel Grid.Row="2">
+                    <!--PlayerLeaderAndStats-->
+                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                     </Border>
                </DockPanel>
           </Grid>
-          <Grid Grid.Column="1" x:Name="gridMiddle"
-            Width="auto"
-            Height="auto">
+          <Grid Grid.Column="1">
+               <!--gridMiddle-->
+               <!--Battlefield + PlayerHand-->
                <Grid.RowDefinitions>
-                    <RowDefinition
-                    Height="0.768*"/>
-                    <RowDefinition
-                    Height="0.232*"/>
+                    <RowDefinition Height="436*"/>
+                    <RowDefinition Height="133*"/>
                </Grid.RowDefinitions>
-               <Grid Grid.Row="0" x:Name="battlefield">
+               <Grid Grid.Row="0">
+                    <!--battlefield-->
                     <Grid.RowDefinitions>
-                         <RowDefinition
-                    Height="0.5*"/>
-                         <RowDefinition
-                    Height="0.5*"/>
+                         <RowDefinition Height="216*"/>
+                         <RowDefinition Height="10*"/>
+                         <RowDefinition Height="210*"/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" x:Name="AI">
+                    <Grid Grid.Row="0">
+                         <!--AI-->
                          <Grid.RowDefinitions>
-                              <RowDefinition
-                                   Height="0.3333*"/>
-                              <RowDefinition
-                                   Height="0.3333*"/>
-                              <RowDefinition
-                                   Height="0.3333*"/>
+                              <RowDefinition Height="0.3333*"/>
+                              <RowDefinition Height="0.3333*"/>
+                              <RowDefinition Height="0.3333*"/>
                          </Grid.RowDefinitions>
-                         <DockPanel Grid.Row="0" x:Name="AISiege">
-                              <Border DockPanel.Dock="Top" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                         <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="0.07*"/>
+                              <ColumnDefinition Width="0.13*"/>
+                              <ColumnDefinition Width="0.80*"/>
+                         </Grid.ColumnDefinitions>
+                         <DockPanel Grid.Row="0" Grid.Column="0" x:Name="AISiegeScore">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="1" x:Name="AIRange">
-                              <Border BorderThickness="1" BorderBrush="#FFDCDCDC">
+                         <DockPanel Grid.Row="0" Grid.Column="1" x:Name="AISiegeModifier">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="2" x:Name="AIMelee">
-                              <Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                         <DockPanel Grid.Row="0" Grid.Column="2" x:Name="AISiege">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="1" Grid.Column="0" x:Name="AIRangeScore">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="1" Grid.Column="1" x:Name="AIRangeModifier">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="1" Grid.Column="2" x:Name="AIRange">
+                              <Border BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="2" Grid.Column="0" x:Name="AIMeleeScore">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="2" Grid.Column="1" x:Name="AIMeleeModifier">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <DockPanel Grid.Row="2" Grid.Column="2" x:Name="AIMelee">
+                              <Border DockPanel.Dock="Bottom" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                               </Border>
                          </DockPanel>
                     </Grid>
-                    <Grid Grid.Row="1" x:Name="Player">
+                    <DockPanel Grid.Row="1">
+                         <!--BattlefieldPadding-->
+                         <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                         </Border>
+                    </DockPanel>
+                    <Grid Grid.Row="2">
+                         <!--Player-->
                          <Grid.RowDefinitions>
-                              <RowDefinition
-                                   Height="0.3333*"/>
-                              <RowDefinition
-                                   Height="0.3333*"/>
-                              <RowDefinition
-                                   Height="0.3333*"/>
+                              <RowDefinition Height="0.3333*"/>
+                              <RowDefinition Height="0.3333*"/>
+                              <RowDefinition Height="0.3333*"/>
                          </Grid.RowDefinitions>
-                         <DockPanel Grid.Row="0" x:Name="PlayerMelee">
-                              <Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                         <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="0.07*"/>
+                              <ColumnDefinition Width="0.13*"/>
+                              <ColumnDefinition Width="0.80*"/>
+                         </Grid.ColumnDefinitions>
+                         <DockPanel Grid.Row="0" Grid.Column="0" x:Name="PlayerMeleeScore">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="1" x:Name="PlayerRange">
-                              <Border BorderThickness="1" BorderBrush="#FFDCDCDC">
+                         <ListBox Grid.Row="0" Grid.Column="1" x:Name="PlayerMeleeModifier"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedTargetCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1MeleeModifHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                         <ListBox Grid.Row="0" Grid.Column="2" x:Name="PlayerMelee"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedTargetCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1MeleeHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                         <DockPanel Grid.Row="1" Grid.Column="0" x:Name="PlayerRangeScore">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                               </Border>
                          </DockPanel>
-                         <DockPanel x:Name="PlayerSiege" Grid.Row="2">
-                              <Border DockPanel.Dock="Top" BorderThickness="1" BorderBrush="#FFDCDCDC">
-                                   <ItemsControl ItemsSource="{Binding PlayerSiegeCards}">
+                         <ListBox Grid.Row="1" Grid.Column="1" x:Name="PlayerRangeModifier"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedTargetCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1RangeModifHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                         <ListBox Grid.Row="1" Grid.Column="2" x:Name="PlayerRange"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedTargetCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1RangeHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                         <DockPanel Grid.Row="2" Grid.Column="0" x:Name="PlayerSiegeScore">
+                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <ListBox Grid.Row="2" Grid.Column="1" x:Name="PlayerSiegeModifier"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedTargetCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1SiegeModifHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                         <ListBox Grid.Row="2" Grid.Column="2" x:Name="PlayerSiege"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedTargetCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1SiegeHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                    </Grid>
+               </Grid>
+               <!--<TextBlock Grid.Row="1" Text="{Binding ObservedHeight, StringFormat={}Current: {0}}"/>-->
+               <Grid Grid.Row="1">
+                    <!--playerHand-->
+                    <Grid.RowDefinitions>
+                         <RowDefinition Height="73*"/>
+                         <RowDefinition Height="60*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                         <!--PlayerHandRow-->
+                         <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="41*"/>
+                              <ColumnDefinition Width="524*"/>
+                         </Grid.ColumnDefinitions>
+                         <DockPanel Grid.Column="0">
+                              <!--PlayerHandPanelPadding-->
+                              <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                         <ListBox Grid.Column="1" x:Name="PlayerHand"
+                              Background="Transparent" BorderBrush="Transparent" BorderThickness="0"
+                              SelectedItem="{Binding SelectedCardSlot, Mode=TwoWay}"
+                              ItemsSource="{Binding Path=P1HandHolder}"
+                              HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                              <ListBox.ItemsPanel>
+                                   <ItemsPanelTemplate>
+                                        <WrapPanel IsItemsHost="True"/>
+                                   </ItemsPanelTemplate>
+                              </ListBox.ItemsPanel>
+                              <ListBox.ItemTemplate>
+                                   <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                             <Image Source="{Binding cardImage.Source}" Margin="-4,0,-4,0"/>
+                                             <!--<TextBlock Text="{Binding SomePropertyOfYourItemVm2}"/>-->
+                                        </StackPanel>
+                                   </DataTemplate>
+                              </ListBox.ItemTemplate>
+                         </ListBox>
+                         <!--<DockPanel Grid.Column="1" x:Name="PlayerHand">
+                              <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                                   <ItemsControl ItemsSource="{Binding Path=P1HandHolder, Mode=TwoWay}">
                                         <ItemsControl.ItemsPanel>
                                              <ItemsPanelTemplate>
                                                   <VirtualizingStackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
@@ -101,26 +314,79 @@
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                              <DataTemplate>
-                                                  <ContentControl Content="{Binding Face}"/>
+                                                  <ContentControl Content="{Binding Picture}"/>
                                              </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                    </ItemsControl>
                               </Border>
-                         </DockPanel>
+                         </DockPanel>-->
                     </Grid>
-               </Grid>
-               <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding ObservedHeight, StringFormat={}Current: {0}}"/>
-               <Grid Grid.Row="1" x:Name="playerDeck" Width="auto">
-                    <DockPanel>
-                         <Border DockPanel.Dock="Bottom" BorderThickness="1" BorderBrush="#FFDCDCDC">
+                    <DockPanel Grid.Row="1">
+                         <!--PlayerHandRowPadding-->
+                         <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                          </Border>
                     </DockPanel>
                </Grid>
           </Grid>
-          <Grid Grid.Column="2" x:Name="gridDecks"
-            Height="auto">
-               <DockPanel>
-                    <Border DockPanel.Dock="Right" BorderThickness="1" BorderBrush="#FFDCDCDC">
+          <!--Players decks + graveyards + CardZoom-->
+          <Grid Grid.Column="2">
+               <!--gridRight-->
+               <Grid.RowDefinitions>
+                    <RowDefinition Height="117*"/>
+                    <RowDefinition Height="313*"/>
+                    <RowDefinition Height="139*"/>
+               </Grid.RowDefinitions>
+               <DockPanel Grid.Row="0">
+                    <!--AIDeckAndGraveyard-->
+                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                    </Border>
+               </DockPanel>
+               <Grid Grid.Row="1">
+                    <!--CardZoom-->
+                    <Grid.ColumnDefinitions>
+                         <ColumnDefinition Width="63*"/>
+                         <ColumnDefinition Width="10*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
+                         <!--Card Zoom Area-->
+                         <Grid.RowDefinitions>
+                              <RowDefinition Height="421*"/>
+                              <RowDefinition Height="148*"/>
+                         </Grid.RowDefinitions>
+                         <DockPanel Grid.Row="0" x:Name="CardZoomImage">
+                              <DockPanel.Background>
+                                   <ImageBrush ImageSource="{Binding SelectedCardSlot.cardImage.Source}"
+                                    Stretch="UniformToFill" AlignmentX="Center" AlignmentY="Top"/>
+                              </DockPanel.Background>
+                         </DockPanel>
+                         <DockPanel Grid.Row="1" x:Name="CardZoomFrame" Visibility="{Binding CardZoomFrameVisibility}">
+                              <DockPanel.Background>
+                                   <ImageBrush ImageSource="Images/Cards/card_frame.png" 
+                                    Stretch="Fill" AlignmentX="Center" AlignmentY="Top"/>
+                              </DockPanel.Background>
+                              <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              </Border>
+                         </DockPanel>
+                    </Grid>
+                    <!--<DockPanel Grid.Column="0" x:Name="CardZoom">
+                         <DockPanel.Background>
+                              <ImageBrush ImageSource="Images/Cards/card_frame.png"
+                                    Stretch="Fill" AlignmentX="Center" AlignmentY="Top"/>
+                         </DockPanel.Background>
+                         <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                              <ItemsControl ItemsSource="{Binding CardZoom}">
+                              </ItemsControl>
+                         </Border>
+                    </DockPanel>-->
+                    <DockPanel Grid.Column="1">
+                         <!--CardZoomPadding-->
+                         <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
+                         </Border>
+                    </DockPanel>
+               </Grid>
+               <DockPanel Grid.Row="2">
+                    <!--PlayerDeckAndGraveyard-->
+                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                     </Border>
                </DockPanel>
           </Grid>

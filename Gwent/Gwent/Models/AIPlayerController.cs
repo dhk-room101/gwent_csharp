@@ -91,7 +91,10 @@ namespace Gwent.Models
                     _decidedCardTransaction = null;
                     attitude = TACTIC_PASS;
                }
-               Console.WriteLine("GFX -#AI# the ai decided on the following transaction: {0}", _decidedCardTransaction);
+               if (_decidedCardTransaction != null)
+               {
+                    Console.WriteLine("GFX -#AI# the ai decided on the following transaction: {0}, {1}", _decidedCardTransaction.sourceCardInstanceRef.templateId, _decidedCardTransaction.sourceCardInstanceRef.templateRef.title);
+               }
           }
 
           protected void state_update_ChooseMove()
@@ -457,7 +460,7 @@ namespace Gwent.Models
                counter = 0;
                while (counter < cardInstanceList.Count)
                {
-                    Console.WriteLine("GFX -#AI# Card Points[ ", cardInstanceList[counter].templateRef.power, " ], Card -", cardInstanceList[counter]);
+                    Console.WriteLine("GFX -#AI# Points[ " + cardInstanceList[counter].templateRef.power + " ], Card - " + cardInstanceList[counter].templateId + "  " + cardInstanceList[counter].templateRef.title);
                     ++counter;
                }
                Console.WriteLine("GFX =#AI#=======================================================================================");

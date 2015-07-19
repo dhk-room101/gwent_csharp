@@ -6,11 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
 
 namespace Gwent.Models
 {
      public class CardSlot
      {
+          public Image cardImage { get; set; }
+          public Storyboard mcPowerIndicator;
+
           protected bool imageLoaded = false;
           private int _cardIndex;
           private int _instanceId;
@@ -58,9 +62,7 @@ namespace Gwent.Models
 
           private const float shadowMax = 90;
           private const float shadowDelta = 4;
-          
-          public Storyboard mcPowerIndicator;
-          
+
           //public var mcHitBox:flash.display.MovieClip;
           //public var mcCopyCount:flash.display.MovieClip;
           //public var mcLockedIcon:flash.display.MovieClip;
@@ -166,6 +168,7 @@ namespace Gwent.Models
                if (cardTemplate != null)
                {
                     typeString = cardTemplate.getTypeString();
+
                     /*loadIcon("icons/gwint/" + cardTemplate.imageLoc + ".png");
                     if (mcPowerIndicator) 
                     {

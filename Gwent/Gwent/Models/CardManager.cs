@@ -227,7 +227,7 @@ namespace Gwent.Models
                {
                     return null;
                }
-               Console.WriteLine("converting to leader {0}, {1}", leader[0].templateId, leader[0].templateRef.title);
+               Console.WriteLine("player {2}: converting to leader {0}, {1}", leader[0].templateId, leader[0].templateRef.title, player);
                return convertToLeader(leader[0]);
           }
 
@@ -1282,16 +1282,23 @@ namespace Gwent.Models
                //should be CardLeaderInstance?
                int kingIndex = 0;
                CardInstance leader = null;
+               CardInstance hand = null;
                List<int> leadersList;
+               List<int> handList;
 
                //P1
                kingIndex = playerDeckDefinitions[PLAYER_1].selectedKingIndex;
                leadersList = new List<int>();
+               handList = new List<int>();
                foreach (int cardID in playerDeckDefinitions[PLAYER_1].cardIndices)
                {
                     if (cardID >= kingIndex * 100 && cardID < (kingIndex * 100 + 5))
                     {
                          leadersList.Add(cardID);
+                    }
+                    else 
+                    {
+                         handList.Add(cardID);
                     }
                }
                if (leadersList.Count > 0)
@@ -1303,15 +1310,29 @@ namespace Gwent.Models
                          addCardInstanceToList(leader, CARD_LIST_LOC_LEADER, PLAYER_1);
                     }
                }
+               if (handList.Count > 0)
+               {
+                    foreach (int handID in handList)
+                    {
+                         hand = spawnCardInstance(handID, PLAYER_1);
+                         Console.WriteLine("hand card found {0}, {1}", hand.templateId, hand.templateRef.title);
+                         addCardInstanceToList(hand, CARD_LIST_LOC_HAND, PLAYER_1);
+                    }
+               }
 
                //P2
                kingIndex = playerDeckDefinitions[PLAYER_2].selectedKingIndex;
                leadersList = new List<int>();
+               handList = new List<int>();
                foreach (int cardID in playerDeckDefinitions[PLAYER_2].cardIndices)
                {
                     if (cardID >= kingIndex * 100 && cardID < (kingIndex * 100 + 5))
                     {
                          leadersList.Add(cardID);
+                    }
+                    else
+                    {
+                         handList.Add(cardID);
                     }
                }
                if (leadersList.Count > 0)
@@ -1321,6 +1342,15 @@ namespace Gwent.Models
                          leader = spawnCardInstance(leaderID, PLAYER_2);
                          Console.WriteLine("leader found {0}, {1}", leader.templateId, leader.templateRef.title);
                          addCardInstanceToList(leader, CARD_LIST_LOC_LEADER, PLAYER_2);
+                    }
+               }
+               if (handList.Count > 0)
+               {
+                    foreach (int handID in handList)
+                    {
+                         hand = spawnCardInstance(handID, PLAYER_2);
+                         Console.WriteLine("hand card found {0}, {1}", hand.templateId, hand.templateRef.title);
+                         addCardInstanceToList(hand, CARD_LIST_LOC_HAND, PLAYER_2);
                     }
                }
           }

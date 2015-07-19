@@ -1,8 +1,10 @@
-﻿//NEEDED
+﻿using Gwent.ViewModels;
+//NEEDED
 //tryPutLeaderInTransaction
 //zoomCardToTransaction
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,7 +33,7 @@ namespace Gwent.Models
 
           protected void on_state_about_to_update()
           {
-               //Console.WriteLine("human player controller: state about to update not implemented yet");
+               ////Console.WriteLine("human player controller: state about to update not implemented yet");
                /*if (_currentZoomedHolder && !mcChoiceDialog.visible) 
                {
                    closeZoomCB();
@@ -77,33 +79,34 @@ namespace Gwent.Models
 
           protected void state_begin_ChoosingCard()
           {
-               Console.WriteLine("human player controller: state_begin_ChoosingCard");
-               //Console.WriteLine("human player controller: state_begin_ChoosingCard Needs skip button");
-               CardLeaderInstance cardLeader = null;
+               //Console.WriteLine("human player controller: state_begin_ChoosingCard");
+               ////Console.WriteLine("human player controller: state_begin_ChoosingCard Needs skip button");
                /*if (_skipButton) 
                {
                    _skipButton.visible = true;
                }*/
+               //CardLeaderInstance cardLeader = null;//temporarily disabled
                if (_currentZoomedHolder == null)
                {
                     //resetToDefaultButtons();
                     //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.navigate, scaleform.clik.constants.NavigationCode.GAMEPAD_L3, -1, "panel_button_common_navigation");
-                    cardLeader = CardManager.getInstance().getCardLeader(playerID);
+                    //temporarily disabled
+                    /*cardLeader = CardManager.getInstance().getCardLeader(playerID);
                     if (cardLeader != null && cardLeader.canBeUsed)
                     {
-                         Console.WriteLine("human player controller:BEGIN card leader can be used YES");
+                         //Console.WriteLine("human player controller:BEGIN card leader can be used YES");
                          //use leader?
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.leaderCard, scaleform.clik.constants.NavigationCode.GAMEPAD_X, red.core.constants.KeyCode.X, "gwint_use_leader");
-                    }
+                    }*/
                     if (_handHolder.cardSlotsList.Count > 0)
                     {
-                         Console.WriteLine("human player controller:BEGIN hand holder card slot list count bigger than 0 at {0}",_handHolder.cardSlotsList.Count);
+                         //Console.WriteLine("human player controller:BEGIN hand holder card slot list count bigger than 0 at {0}",_handHolder.cardSlotsList.Count);
                          //common_select
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.apply, scaleform.clik.constants.NavigationCode.GAMEPAD_A, red.core.constants.KeyCode.ENTER, "panel_button_common_select");
                     }
                     if (_boardRenderer.getSelectedCard() != null && cardZoomEnabled)
                     {
-                         Console.WriteLine( "human player controller: BEGIN board renderer has selected card, and card zoom is enabled");
+                         //Console.WriteLine( "human player controller: BEGIN board renderer has selected card, and card zoom is enabled");
                          //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.zoomCard, scaleform.clik.constants.NavigationCode.GAMEPAD_R2, red.core.constants.KeyCode.RIGHT_MOUSE, "panel_button_common_zoom");
                     }
                }
@@ -111,7 +114,16 @@ namespace Gwent.Models
 
           protected void state_update_ChoosingCard()
           {
-               Console.WriteLine("human player controller: state_update_ChoosingCard");
+               //Console.WriteLine("human player controller: state_update_ChoosingCard");
+               //not needed-handled in card holder class card add/remove functions
+               /*if (_handHolder.cardSlotsList.Count != MainWindow_ViewModel.mSingleton.P1HandHolder.Count)
+               {
+                    MainWindow_ViewModel.mSingleton.P1HandHolder = new ObservableCollection<CardSlot>();
+                    foreach (var slot in _handHolder.cardSlotsList)
+                    {
+                         MainWindow_ViewModel.mSingleton.P1HandHolder.Add(slot);
+                    }
+               }*/
                CardInstance cardInstance = null;
                bool isCardLeader = false;
                bool hasEffectUnsummonDummy = false;
@@ -123,7 +135,8 @@ namespace Gwent.Models
                     isCardLeader = cardInstance is CardLeaderInstance;
                     hasEffectUnsummonDummy = cardInstance.templateRef.hasEffect(CardTemplate.CardEffect_UnsummonDummy);
                     isTypeGlobalEffect = cardInstance.templateRef.isType(CardTemplate.CardType_Global_Effect);
-                    if (isCardLeader || isTypeGlobalEffect)
+                    //should be negative?
+                    if (!isCardLeader || !isTypeGlobalEffect)
                     {
                          _stateMachine.ChangeState("WaitConfirmation");
                     }
@@ -140,7 +153,7 @@ namespace Gwent.Models
 
           protected void state_end_ChoosingCard()
           {
-               Console.WriteLine("human player controller: state_end_ChoosingCard Needs skip button");
+               //Console.WriteLine("human player controller: state_end_ChoosingCard Needs skip button");
                /*if (_skipButton) 
                {
                    _skipButton.visible = false;
@@ -170,7 +183,7 @@ namespace Gwent.Models
                          cardTarget = CardManager.getInstance().getCardInstance(selectedCardHolder.getSelectedCardSlot().instanceId);
                          if (cardSource.canBeCastOn(cardTarget))
                          {
-                              Console.WriteLine("human player controller source can be cast on target");
+                              //Console.WriteLine("human player controller source can be cast on target");
                               //red.game.witcher3.managers.InputFeedbackManager.appendButtonById(red.game.witcher3.constants.GwintInputFeedback.apply, scaleform.clik.constants.NavigationCode.GAMEPAD_A, red.core.constants.KeyCode.ENTER, "panel_common_apply");
                          }
                     }
@@ -220,12 +233,17 @@ namespace Gwent.Models
           protected void state_update_WaitConfirmation()
           {
                on_state_about_to_update();
+               //evaluate TRUE card confirmation
+               CardInstance source = CardManager.getInstance().getCardInstance(_transactionCard.instanceId);
+               source.recalculatePowerPotential(CardManager.getInstance());
+               _cardConfirmation = true;
                if (_cardConfirmation && _transactionCard != null)
                {
                     _cardConfirmation = false;
-                    _decidedCardTransaction = new CardTransaction();
-                    _decidedCardTransaction.targetPlayerID = playerID;
-                    _decidedCardTransaction.sourceCardInstanceRef = CardManager.getInstance().getCardInstance(_transactionCard.instanceId);
+                    CardTransaction optimal = new CardTransaction();
+                    optimal.targetPlayerID = playerID;
+                    optimal.sourceCardInstanceRef = CardManager.getInstance().getCardInstance(_transactionCard.instanceId);
+                    _decidedCardTransaction = optimal.sourceCardInstanceRef.getOptimalTransaction();
                     _stateMachine.ChangeState("ApplyingCard");
                }
           }
@@ -248,10 +266,11 @@ namespace Gwent.Models
                }
           }
 
-          protected void handleCardChosen()
+          public void handleCardChosen()
           {
                GwintCardHolder cardHolder = _handHolder;
-               CardSlot cardSlot = _boardRenderer.getCardSlotById(cardHolder.selectedCardIdx);
+               //CardSlot cardSlot = _boardRenderer.getCardSlotById(cardHolder.selectedCardIdx);
+               CardSlot cardSlot = MainWindow_ViewModel.mSingleton.SelectedCardSlot;
                CardInstance source = null;
                CardInstance target = null;
                CardLeaderInstance leader = null;
@@ -259,7 +278,7 @@ namespace Gwent.Models
                {
                     return;
                }
-               Console.WriteLine("GFX handleCardChosen <", _stateMachine.currentState, "> ", cardSlot.cardIndex);
+               //Console.WriteLine("GFX handleCardChosen <" + _stateMachine.currentState + "> " + cardSlot.cardIndex);
                if (cardSlot != null)
                {
                     switch (_stateMachine.currentState)
@@ -268,7 +287,7 @@ namespace Gwent.Models
                               {
                                    if (cardHolder.cardHolderID == CardManager.CARD_LIST_LOC_HAND || cardHolder.cardHolderID == CardManager.CARD_LIST_LOC_LEADER && cardHolder.playerID == CardManager.PLAYER_1)
                                    {
-                                        leader = (CardLeaderInstance)cardSlot.cardInstance;
+                                        leader = CardManager.getInstance().convertToLeader(cardSlot.cardInstance);
                                         if (leader == null || leader.canBeUsed)
                                         {
                                              startCardTransaction(cardSlot.instanceId);
@@ -293,6 +312,7 @@ namespace Gwent.Models
                               }
                          default:
                               {
+                                   //Console.WriteLine("human player controller:handle card chosen: no match!");
                                    break;
                               }
                     }
@@ -301,7 +321,7 @@ namespace Gwent.Models
 
           public override void startTurn()
           {
-               Console.WriteLine("human player controller: start turn");
+               //Console.WriteLine("human player controller: start turn");
                if (CardManager.getInstance().getCardInstanceList(CardManager.CARD_LIST_LOC_HAND, playerID).Count == 0 && 
                     CardManager.getInstance().getCardLeader(playerID) == null)
                     //!CardManager.getInstance().getCardLeader(playerID).canBeUsed)
@@ -390,6 +410,21 @@ namespace Gwent.Models
                if (_handHolder != null && !(_boardRenderer.getSelectedCardHolder() == _handHolder))
                {
                     _boardRenderer.selectCardHolderAdv(_handHolder);
+               }
+          }
+
+          protected override void state_update_ApplyingCard()
+          {
+               on_state_about_to_update();
+               bool ok = true;
+               //if (!CardTweenManager.getInstance().isAnyCardMoving() && !gameFlowControllerRef.mcMessageQueue.ShowingMessage() && !CardFXManager.getInstance().isPlayingAnyCardFX() && !mcChoiceDialog.visible)
+               if (ok == true)
+               {
+                    currentRoundStatus = BasePlayerController.ROUND_PLAYER_STATUS_DONE; 
+                    transactionCard = null;
+                    _turnOver = true;
+                    bool temp = turnOver;//this is to jumpstart turnover!
+                    _stateMachine.ChangeState("Idle");
                }
           }
      }

@@ -30,6 +30,7 @@ namespace Gwent.Models
                _stateMachine = new FiniteStateMachine();
           }
 
+          //incomplete logic
           public int currentRoundStatus
           {
                get
@@ -123,7 +124,9 @@ namespace Gwent.Models
 
           protected virtual void state_begin_ApplyingCard()
           {
-               CardLeaderInstance leader = (CardLeaderInstance)_decidedCardTransaction.sourceCardInstanceRef;
+               //ignore leader for now?
+               //CardLeaderInstance leader = (CardLeaderInstance)_decidedCardTransaction.sourceCardInstanceRef;
+               CardLeaderInstance leader = null;
                if (leader != null)
                {
                     leader.ApplyLeaderAbility(isAI);
@@ -134,24 +137,28 @@ namespace Gwent.Models
                {
                     if (_decidedCardTransaction.targetCardInstanceRef != null)
                     {
+                         Console.WriteLine("base: applyTransactionCardToCardInstance");
                          applyTransactionCardToCardInstance(_decidedCardTransaction.targetCardInstanceRef);
                     }
                     else if (_decidedCardTransaction.sourceCardInstanceRef.templateRef.isType(CardTemplate.CardType_Global_Effect))
                     {
+                         Console.WriteLine("base: applyGlobalEffectTransactionCard");
                          applyGlobalEffectTransactionCard();
                     }
                     else
                     {
+                         Console.WriteLine("base: declineCardTransaction");
                          declineCardTransaction();
                     }
                }
                else
                {
+                    Console.WriteLine("base: transferTransactionCardToDestination");
                     transferTransactionCardToDestination(_decidedCardTransaction.targetSlotID, _decidedCardTransaction.targetPlayerID);
                }
           }
 
-          protected void state_update_ApplyingCard()
+          protected virtual void state_update_ApplyingCard()
           {
                if (!cardEffectApplying())
                {
@@ -168,9 +175,11 @@ namespace Gwent.Models
 
           protected virtual bool cardEffectApplying()
           {
-               return CardTweenManager.getInstance().isAnyCardMoving() ||
+               //TO DO
+               /*return CardTweenManager.getInstance().isAnyCardMoving() ||
                   //gameFlowControllerRef.mcMessageQueue.ShowingMessage() ||//TO DO
-                  CardFXManager.getInstance().isPlayingAnyCardFX();
+                  CardFXManager.getInstance().isPlayingAnyCardFX();*/
+               return false;
           }
 
           protected void applyTransactionCardToCardInstance(CardInstance card)
@@ -236,7 +245,13 @@ namespace Gwent.Models
                     bool t = _turnOver && (_transactionCard == null);
                     bool _tc = _transactionCard == null;
                     //implement this later
-                    //Console.WriteLine("base player controller: turn over get: turnover is {0},_turn over is {1}, and transaction card is empty is {2}",t,_turnOver,_tc);
+                    if (_transactionCard == null)
+                    {
+                         if (_turnOver == true)
+                         {
+                              Console.WriteLine("base player controller: turn over get: turnover is {0},_turn over is {1}, and transaction card is empty is {2}", t, _turnOver, _tc);
+                         }
+                    }
                     return _turnOver && (_transactionCard == null);
                }
           }

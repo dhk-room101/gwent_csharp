@@ -1,62 +1,46 @@
-﻿using System.Reactive;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using MVVMSidekick.ViewModels;
-using MVVMSidekick.Views;
-using MVVMSidekick.Reactive;
-using MVVMSidekick.Services;
-using MVVMSidekick.Commands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
-using System.Runtime.Serialization;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
-using System.Windows.Shapes;
+using Gwent.Core;
 using Gwent.Models;
 using System.IO;
 using System.Xml.XPath;
-using System.Xml.Linq;
+using System.Xml;
 
 namespace Gwent.ViewModels
 {
      public class MainWindow_ViewModel : ViewModelBase<MainWindow_ViewModel>
      {
-          //public var mcMessageQueue:W3MessageQueue;
-          //public var mcChoiceDialog:W3ChoiceDialog;
-          //public var mcEndGameDialog:GwintEndGameDialog;
-          //public var btnSkipTurn:InputFeedbackButton;
-          //public var mcCloseBtn:ConditionalCloseButton;
-          //public var mcTutorials:GwintTutorial;
-
-          public bool debug = true;
-          public bool tutorialsOn = false;
-          private const int SKIP_TURN_HOLD_DELAY = 1000;
-          public GwintGameFlowController gameFlowController;
-          public GwintPlayerRenderer mcPlayer1Renderer;
-          public GwintPlayerRenderer mcPlayer2Renderer;
-          public GwintDeckRenderer mcP1DeckRenderer = new GwintDeckRenderer();
-          public GwintDeckRenderer mcP2DeckRenderer = new GwintDeckRenderer();
-          public GwintBoardRenderer mcBoardRenderer;
-          public CardFXManager mcCardFXManager;
-          public static MainWindow_ViewModel mSingleton;//GwintGameMenu
-          public CardManager _cardManager;
-          private Image image;
+          public bool debug { get; set; }
+          private int cardsDealt { get; set; }
+          public static MainWindow_ViewModel mSingleton { get; set; }
+          public Dictionary<int, CardTemplate> cardTemplates { get; set; }
+          public List<CardDeck>[] completeDecks { get; set; }
+          public List<CardDeck> currentGameDecks { get; set; }
+          public List<GameRoundResult> roundResults { get; set; }
+          public List<int> currentPlayerScores { get; set; }
+          public bool[] currentRoundStatus { get; set; }
 
           public MainWindow_ViewModel()
           {
+               Title = "Gwent";
+
+               mSingleton = this;
+
+               InitializeVariables();
+
                DefaultSettings();
-               
+
                InitializeHolders();
 
-               gameFlowController = new GwintGameFlowController();
-
-               _cardManager = CardManager.getInstance();
-               _cardManager.cardValues = new GwintCardValues();
+               //CardManager.getInstance().cardValues = new GwintCardValues();
 
                //create empty decks
                createDecks();
@@ -67,246 +51,309 @@ namespace Gwent.ViewModels
                if (debug) { randomizeFaction(); }
 
                InitializeRenderers();
+          }
 
-               /*if (debug) { testCardsCalculations(); }*/
+          private void InitializeVariables()
+          {
+               cardTemplates = new Dictionary<int, CardTemplate>();
 
-               mSingleton = this;
+               //initialize current game decks
+               currentGameDecks = new List<CardDeck>();//randomizeFaction
+               currentGameDecks.Add(new CardDeck());
+               currentGameDecks.Add(new CardDeck());
+
+               //initialize current game score(2 out of 3)
+               roundResults = new List<GameRoundResult>();
+               roundResults.Add(new GameRoundResult());
+               roundResults.Add(new GameRoundResult());
+               roundResults.Add(new GameRoundResult());
+
+               //initialize current score for players
+               currentPlayerScores = new List<int>();
+               currentPlayerScores.Add(0);
+               currentPlayerScores.Add(0);
+
+               //Initialize current round status: true/active, false/pass
+               currentRoundStatus = new bool[2];
+               currentRoundStatus[ValuesRepository.PLAYER_1] = true;//active
+               currentRoundStatus[ValuesRepository.PLAYER_2] = true;//active
           }
 
           private void DefaultSettings()
           {
+               debug = true;
                DebugBorder = "0";
                CardZoomFrameVisibility = "Hidden";
                SelectedCardSlot = null;
+               IsAITurn = false;
+               AIAttitude = ValuesRepository.TACTIC_NONE;
           }
 
           private void InitializeRenderers()
           {
-               //board renderer
+               /*//board renderer
                mcBoardRenderer = new GwintBoardRenderer();
-               _cardManager.boardRenderer = mcBoardRenderer;
+               CardManager.getInstance().boardRenderer = mcBoardRenderer;
 
                //players renderers
                mcPlayer1Renderer = new GwintPlayerRenderer { playerID = 0, playerName = "player" };
                mcPlayer2Renderer = new GwintPlayerRenderer { playerID = 1, playerName = "AI" };
 
-               _cardManager.playerRenderers.Add(mcPlayer1Renderer);
-               _cardManager.playerRenderers.Add(mcPlayer2Renderer);
+               CardManager.getInstance().playerRenderers.Add(mcPlayer1Renderer);
+               CardManager.getInstance().playerRenderers.Add(mcPlayer2Renderer);*/
           }
 
           private void InitializeHolders()
           {
                Holders = new List<ObservableCollection<CardSlot>>();
 
-               WeatherHolder = new ObservableCollection<CardSlot>();
-               P1LeaderHolder = new ObservableCollection<CardSlot>();
-               P2LeaderHolder = new ObservableCollection<CardSlot>();
-               P1DeckHolder = new ObservableCollection<CardSlot>();
-               P2DeckHolder = new ObservableCollection<CardSlot>();
-               P1HandHolder = new ObservableCollection<CardSlot>();
-               P2HandHolder = new ObservableCollection<CardSlot>();
-               P1GraveyardHolder = new ObservableCollection<CardSlot>();
-               P2GraveyardHolder = new ObservableCollection<CardSlot>();
-               P1SiegeHolder = new ObservableCollection<CardSlot>();
-               P2SiegeHolder = new ObservableCollection<CardSlot>();
-               P1RangeHolder = new ObservableCollection<CardSlot>();
-               P2RangeHolder = new ObservableCollection<CardSlot>();
-               P1MeleeHolder = new ObservableCollection<CardSlot>();
-               P2MeleeHolder = new ObservableCollection<CardSlot>();
-               P1SiegeModifHolder = new ObservableCollection<CardSlot>();
-               P2SiegeModifHolder = new ObservableCollection<CardSlot>();
-               P1RangeModifHolder = new ObservableCollection<CardSlot>();
-               P2RangeModifHolder = new ObservableCollection<CardSlot>();
-               P1MeleeModifHolder = new ObservableCollection<CardSlot>();
-               P2MeleeModifHolder = new ObservableCollection<CardSlot>();
+               WeatherHolder = new ObservableCollection<CardSlot>();//0
+
+               P1LeaderHolder = new ObservableCollection<CardSlot>();//1
+               P1DeckHolder = new ObservableCollection<CardSlot>();//2
+               P1HandHolder = new ObservableCollection<CardSlot>();//3
+               P1GraveyardHolder = new ObservableCollection<CardSlot>();//4
+               P1SiegeHolder = new ObservableCollection<CardSlot>();//5
+               P1RangeHolder = new ObservableCollection<CardSlot>();//6
+               P1MeleeHolder = new ObservableCollection<CardSlot>();//7
+               P1SiegeModifHolder = new ObservableCollection<CardSlot>();//8
+               P1RangeModifHolder = new ObservableCollection<CardSlot>();//9
+               P1MeleeModifHolder = new ObservableCollection<CardSlot>();//10
+
+               P2LeaderHolder = new ObservableCollection<CardSlot>();//11
+               P2DeckHolder = new ObservableCollection<CardSlot>();//12
+               P2HandHolder = new ObservableCollection<CardSlot>();//13
+               P2GraveyardHolder = new ObservableCollection<CardSlot>();//14
+               P2SiegeHolder = new ObservableCollection<CardSlot>();//15
+               P2RangeHolder = new ObservableCollection<CardSlot>();//16
+               P2MeleeHolder = new ObservableCollection<CardSlot>();//17
+               P2SiegeModifHolder = new ObservableCollection<CardSlot>();//18
+               P2RangeModifHolder = new ObservableCollection<CardSlot>();//19
+               P2MeleeModifHolder = new ObservableCollection<CardSlot>();//20
 
                Holders.Add(WeatherHolder);
+
                Holders.Add(P1LeaderHolder);
-               Holders.Add(P2LeaderHolder);
                Holders.Add(P1DeckHolder);
-               Holders.Add(P2DeckHolder);
                Holders.Add(P1HandHolder);
-               Holders.Add(P2HandHolder);
                Holders.Add(P1GraveyardHolder);
-               Holders.Add(P2GraveyardHolder);
                Holders.Add(P1SiegeHolder);
-               Holders.Add(P2SiegeHolder);
                Holders.Add(P1RangeHolder);
-               Holders.Add(P2RangeHolder);
                Holders.Add(P1MeleeHolder);
-               Holders.Add(P2MeleeHolder);
                Holders.Add(P1SiegeModifHolder);
-               Holders.Add(P2SiegeModifHolder);
                Holders.Add(P1RangeModifHolder);
-               Holders.Add(P2RangeModifHolder);
                Holders.Add(P1MeleeModifHolder);
+
+               Holders.Add(P2LeaderHolder);
+               Holders.Add(P2DeckHolder);
+               Holders.Add(P2HandHolder);
+               Holders.Add(P2GraveyardHolder);
+               Holders.Add(P2SiegeHolder);
+               Holders.Add(P2RangeHolder);
+               Holders.Add(P2MeleeHolder);
+               Holders.Add(P2SiegeModifHolder);
+               Holders.Add(P2RangeModifHolder);
                Holders.Add(P2MeleeModifHolder);
           }
-          
+
           private void createDecks()
           {
-               _cardManager.completeDecks = new List<GwintDeck>[2];
-               _cardManager.completeDecks[0] = new List<GwintDeck>();
-               _cardManager.completeDecks[1] = new List<GwintDeck>();
+               completeDecks = new List<CardDeck>[2];
+               completeDecks[ValuesRepository.PLAYER_1] = new List<CardDeck>();
+               completeDecks[ValuesRepository.PLAYER_2] = new List<CardDeck>();
 
                //complete decks for player ID 0
-               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "Neutral", selectedKingIndex = 0});
-               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "NorthKingdom", selectedKingIndex = 1 });
-               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "Nilfgaard", selectedKingIndex = 2 });
-               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "Scoiatael", selectedKingIndex = 3 });
-               _cardManager.completeDecks[0].Add(new GwintDeck { deckName = "NoMansLand", selectedKingIndex = 4 });
+               completeDecks[ValuesRepository.PLAYER_1].Add(new CardDeck { deckTypeName = "Neutral", deckTypeIndex = 0 });
+               completeDecks[ValuesRepository.PLAYER_1].Add(new CardDeck { deckTypeName = "NorthKingdom", deckTypeIndex = 1 });
+               completeDecks[ValuesRepository.PLAYER_1].Add(new CardDeck { deckTypeName = "Nilfgaard", deckTypeIndex = 2 });
+               completeDecks[ValuesRepository.PLAYER_1].Add(new CardDeck { deckTypeName = "Scoiatael", deckTypeIndex = 3 });
+               completeDecks[ValuesRepository.PLAYER_1].Add(new CardDeck { deckTypeName = "NoMansLand", deckTypeIndex = 4 });
 
                //complete decks for player ID 1
-               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "Neutral", selectedKingIndex = 0 });
-               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "NorthKingdom", selectedKingIndex = 1 });
-               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "Nilfgaard", selectedKingIndex = 2 });
-               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "Scoiatael", selectedKingIndex = 3 });
-               _cardManager.completeDecks[1].Add(new GwintDeck { deckName = "NoMansLand", selectedKingIndex = 4 });
+               completeDecks[ValuesRepository.PLAYER_2].Add(new CardDeck { deckTypeName = "Neutral", deckTypeIndex = 0 });
+               completeDecks[ValuesRepository.PLAYER_2].Add(new CardDeck { deckTypeName = "NorthKingdom", deckTypeIndex = 1 });
+               completeDecks[ValuesRepository.PLAYER_2].Add(new CardDeck { deckTypeName = "Nilfgaard", deckTypeIndex = 2 });
+               completeDecks[ValuesRepository.PLAYER_2].Add(new CardDeck { deckTypeName = "Scoiatael", deckTypeIndex = 3 });
+               completeDecks[ValuesRepository.PLAYER_2].Add(new CardDeck { deckTypeName = "NoMansLand", deckTypeIndex = 4 });
           }
 
-          private void randomizeCards(int playerID)
+          private async void randomizeCards(int playerID)
           {
-               bool leaderDrawn = false;
-               int kingIndex = _cardManager.playerDeckDefinitions[playerID].selectedKingIndex;
+               //TO DO handle leader
+               int deckTypeIndex = currentGameDecks[playerID].deckTypeIndex;
                SafeRandom random = new SafeRandom();
                int i = 0;
                while (i < 10)
                {
-                    int cardIndex = random.Next(_cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.Count); 
-                    int cardID = _cardManager.playerDeckDefinitions[playerID].cardIndicesInDeck.ElementAt(cardIndex);
-                    //leader cards
-                    if (cardID >= kingIndex * 100 && cardID < (kingIndex * 100 + 5) && leaderDrawn == false)
+                    await ValuesRepository.PutTaskDelay(500);
+                    //statically search the deck, excluding the last 4, which are leaders
+                    //TO DO if possible, make it more dynamic
+                    int cardIndex = random.Next(Holders.ElementAt(playerID * 10 + ValuesRepository.CARD_LIST_LOC_DECK).Count - 4);
+                    CardSlot cardSlot = Holders.ElementAt(playerID * 10 + ValuesRepository.CARD_LIST_LOC_DECK).ElementAt(cardIndex);
+                    if (playerID == ValuesRepository.PLAYER_1)
                     {
-                         leaderDrawn = true;
-                         Console.WriteLine("player {0} leader found {1}", playerID, cardID);
-                         _cardManager.playerDeckDefinitions[playerID].cardIndices.Add(cardID);
-                         ++i;
+                         cardSlot.IsTransactionReady = true;
                     }
-                    else if (cardID >= (kingIndex * 100 + 5))//regular cards
-                    {
-                         _cardManager.playerDeckDefinitions[playerID].cardIndices.Add(cardID);
-                         ++i;
-                    }
+                    moveCard(cardSlot, ValuesRepository.CARD_LIST_LOC_HAND);
+                    //Console.WriteLine("processed card {0} for player {1}", i, playerID);
+                    ++i;
                }
+               //Console.WriteLine("player {0} Drew {1} cards", playerID, i);
+               ++cardsDealt;
+               if (cardsDealt == 2)//both players got their cards
+               {
+                    CurrentState = "P1 Turn";
+               }
+               //Console.WriteLine("==================================");
+          }
+
+          private void randomizeCards2(int playerID)
+          {
+
           }
 
           private void randomizeFaction()
           {
+               /**this is done once per game
+               *cards may get multiple instances
+               *should employ some further rebalancing**/
+               CurrentState = "Dealing";
                SafeRandom random = new SafeRandom();
-               int randomFaction;
+               //List<int> deckInstance = new List<int>();
+               int deckInstanceLength = 0;
+               int randomFaction = 0;
+               int counter = 0;
 
-               randomFaction = random.Next(1,5);//P1
-               _cardManager.playerDeckDefinitions[CardManager.PLAYER_1] = _cardManager.completeDecks[CardManager.PLAYER_1].ElementAt(randomFaction);
-               randomizeCards(CardManager.PLAYER_1);
+               randomFaction = random.Next(1, 5);//P1
+               currentGameDecks[ValuesRepository.PLAYER_1] = completeDecks[ValuesRepository.PLAYER_1].ElementAt(randomFaction);
 
-               randomFaction = random.Next(1,5);//P2
-               _cardManager.playerDeckDefinitions[CardManager.PLAYER_2] = _cardManager.completeDecks[CardManager.PLAYER_2].ElementAt(randomFaction);
-               randomizeCards(CardManager.PLAYER_2);
-               
-               foreach (GwintDeck deck in _cardManager.playerDeckDefinitions)
+               //randomize current game Deck instance
+               deckInstanceLength = random.Next(currentGameDecks[ValuesRepository.PLAYER_1].cardIndicesInDeck.Count - 10, currentGameDecks[ValuesRepository.PLAYER_1].cardIndicesInDeck.Count - 5) + random.Next(1, 5);
+               //convert card indices from abstract deck into card slot in visual deck
+               while (counter < deckInstanceLength)
                {
-                    Console.WriteLine("player faction is {0}, with selectedKingIndex {1}", deck.deckName, deck.selectedKingIndex);
+                    int cardIndex = random.Next(currentGameDecks[ValuesRepository.PLAYER_1].cardIndicesInDeck.Count);
+                    int cardID = currentGameDecks[ValuesRepository.PLAYER_1].cardIndicesInDeck.ElementAt(cardIndex);
+                    convertToSlotInDeckHolder(cardID, ValuesRepository.PLAYER_1, ValuesRepository.CARD_LIST_LOC_DECK);
+                    ++counter;
+               }
+               randomizeCards(ValuesRepository.PLAYER_1);
+
+               randomFaction = random.Next(1, 5);//P2
+               currentGameDecks[ValuesRepository.PLAYER_2] = completeDecks[ValuesRepository.PLAYER_2].ElementAt(randomFaction);
+               //randomize current game Deck instance
+               deckInstanceLength = random.Next(currentGameDecks[ValuesRepository.PLAYER_2].cardIndicesInDeck.Count - 10, currentGameDecks[ValuesRepository.PLAYER_2].cardIndicesInDeck.Count - 5) + random.Next(1, 5);
+               //reset counter
+               counter = 0;
+               //convert card indices from abstract deck into card slot in visual deck
+               while (counter < deckInstanceLength)
+               {
+                    int cardIndex = random.Next(currentGameDecks[ValuesRepository.PLAYER_2].cardIndicesInDeck.Count);
+                    int cardID = currentGameDecks[ValuesRepository.PLAYER_2].cardIndicesInDeck.ElementAt(cardIndex);
+                    convertToSlotInDeckHolder(cardID, ValuesRepository.PLAYER_2, ValuesRepository.CARD_LIST_LOC_DECK);
+                    ++counter;
+               }
+               randomizeCards(ValuesRepository.PLAYER_2);
+
+               for (var i = 0; i < currentGameDecks.Count; i++)
+               {
+                    CardDeck deck = currentGameDecks.ElementAt(i);
+                    Console.WriteLine("player {2} faction is {0}, with deckTypeIndex {1}", deck.deckTypeName, deck.deckTypeIndex, i);
+                    Console.WriteLine("==================================================");
                }
           }
 
           private void getCardTemplates()
           {
-               string gwent_cards = MainWindow.gamePath + "\\def_gwint_cards_final.xml";
-               if (File.Exists(gwent_cards))
+               List<string> definitions = new List<string>();
+               definitions.Add("def_gwint_cards_final.xml");
+               definitions.Add("def_gwint_battle_king_cards.xml");
+
+               foreach (String definition in definitions)
                {
-                    var doc = new XPathDocument(gwent_cards);
-                    var nav = doc.CreateNavigator();
-                    var locations = nav.Select("/redxml/custom/gwint_card_definitions_final");
-                    while (locations.MoveNext() == true)
+                    string fileContents = GetResourceTextFile(definition);
+                    if (fileContents != null)
                     {
-                         var cards = locations.Current.Select("card");
-                         while (cards.MoveNext() == true)
+                         var doc = new XmlDocument();
+                         doc.LoadXml(fileContents);
+                         var nav = doc.CreateNavigator();
+                         var locations = nav.Select("/redxml/custom/card_definitions");
+                         while (locations.MoveNext() == true)
                          {
-                              int index = Convert.ToInt32(cards.Current.GetAttribute("index", ""));
-                              string title = cards.Current.GetAttribute("title", "");
-                              string description = cards.Current.GetAttribute("description", "");
-                              int power = Convert.ToInt32(cards.Current.GetAttribute("power", ""));
-                              string picture = cards.Current.GetAttribute("picture", "");
-                              int faction_index = CardTemplate.factionStringToInt(cards.Current.GetAttribute("faction_index", ""));
-                              int typeArray = 0;
-
-                              var xml_type_flags = cards.Current.Select("type_flags");
-                              List<int> type_flags = new List<int>();
-                              while (xml_type_flags.MoveNext() == true)
+                              var cards = locations.Current.Select("card");
+                              while (cards.MoveNext() == true)
                               {
-                                   var xml_flag = xml_type_flags.Current.Select("flag");
-                                   while (xml_flag.MoveNext() == true)
+                                   int index = Convert.ToInt32(cards.Current.GetAttribute("index", ""));
+                                   string title = cards.Current.GetAttribute("title", "");
+                                   string description = cards.Current.GetAttribute("description", "");
+                                   int power = Convert.ToInt32(cards.Current.GetAttribute("power", ""));
+                                   string picture = cards.Current.GetAttribute("picture", "");
+                                   int faction_index = ValuesRepository.factionStringToInt(cards.Current.GetAttribute("faction_index", ""));
+
+                                   var xml_type_flags = cards.Current.Select("type_flags");
+                                   List<int> type_flags = new List<int>();
+                                   while (xml_type_flags.MoveNext() == true)
                                    {
-                                        int flag = CardTemplate.typeStringToInt(xml_flag.Current.GetAttribute("name", ""));
-                                        type_flags.Add(flag);
+                                        var xml_flag = xml_type_flags.Current.Select("flag");
+                                        while (xml_flag.MoveNext() == true)
+                                        {
+                                             int flag = ValuesRepository.typeStringToInt(xml_flag.Current.GetAttribute("name", ""));
+                                             type_flags.Add(flag);
+                                        }
                                    }
-                              }
 
-                              if (type_flags.Count > 0)
-                              {
-                                   typeArray = type_flags.ElementAt(0);
-                              }
-
-                              if (type_flags.Count > 1)
-                              {
-                                   for (var i = 1; i < type_flags.Count; i++)
+                                   var xml_effect_flags = cards.Current.Select("effect_flags");
+                                   List<int> effect_flags = new List<int>();
+                                   while (xml_effect_flags.MoveNext() == true)
                                    {
-                                        typeArray |= type_flags.ElementAt(i);
+                                        var xml_flag = xml_effect_flags.Current.Select("flag");
+                                        while (xml_flag.MoveNext() == true)
+                                        {
+                                             int flag = ValuesRepository.effectStringToInt(xml_flag.Current.GetAttribute("name", ""));
+                                             effect_flags.Add(flag);
+                                        }
                                    }
-                              }
-                              
-                              var xml_effect_flags = cards.Current.Select("effect_flags");
-                              List<int> effect_flags = new List<int>();
-                              while (xml_effect_flags.MoveNext() == true)
-                              {
-                                   var xml_flag = xml_effect_flags.Current.Select("flag");
-                                   while (xml_flag.MoveNext() == true)
+
+                                   var xml_summonFlags = cards.Current.Select("summonFlags");
+                                   List<int> summonFlags = new List<int>();
+                                   while (xml_summonFlags.MoveNext() == true)
                                    {
-                                        int flag = CardTemplate.effectStringToInt(xml_flag.Current.GetAttribute("name", ""));
-                                        effect_flags.Add(flag);
+                                        var xml_card = xml_summonFlags.Current.Select("card");
+                                        while (xml_card.MoveNext() == true)
+                                        {
+                                             int card = Convert.ToInt32(xml_card.Current.GetAttribute("id", ""));
+                                             summonFlags.Add(card);
+                                        }
                                    }
-                              }
 
-                              var xml_summonFlags = cards.Current.Select("summonFlags");
-                              List<int> summonFlags = new List<int>();
-                              while (xml_summonFlags.MoveNext() == true)
-                              {
-                                   var xml_card = xml_summonFlags.Current.Select("card");
-                                   while (xml_card.MoveNext() == true)
+                                   CardTemplate template = new CardTemplate
                                    {
-                                        int card = Convert.ToInt32(xml_card.Current.GetAttribute("id", ""));
-                                        summonFlags.Add(card);
-                                   }
+                                        index = index,
+                                        power = power,
+                                        title = title,
+                                        description = description,
+                                        imageLoc = picture,
+                                        factionIdx = faction_index,
+                                        typeFlags = type_flags,
+                                        effectFlags = effect_flags,
+                                        summonFlags = summonFlags
+                                   };
+
+                                   cardTemplates[index] = template;
+
+                                   addToDeck(template);
                               }
-
-                              CardTemplate template = new CardTemplate
-                              {
-                                   index = index,
-                                   power = power,
-                                   title = title,
-                                   description = description,
-                                   imageLoc = picture,
-                                   factionIdx = faction_index,
-                                   typeArray = typeArray,
-                                   effectFlags = effect_flags,
-                                   summonFlags = summonFlags
-                              };
-
-                              _cardManager._cardTemplates[index] = template;
-
-                              addToDeck(template);
-                              //Console.WriteLine("something");
                          }
-                    }
 
-                    if (debug)
+                    }
+               }
+               if (debug)
+               {
+                    for (var i = 0; i < completeDecks.Length; i++)
                     {
-                         for (var i = 0; i < _cardManager.completeDecks.Length; i++)
+                         foreach (CardDeck deck in completeDecks[i])
                          {
-                              foreach (GwintDeck deck in _cardManager.completeDecks[i])
-                              {
-                                   Console.WriteLine("deck {0} for player {1} has {2} cards", deck.deckName, i, deck.cardIndicesInDeck.Count);
-                              }
+                              Console.WriteLine("deck {0} for player {1} has {2} cards", deck.deckTypeName, i, deck.cardIndicesInDeck.Count);
                          }
                     }
                }
@@ -314,66 +361,17 @@ namespace Gwent.ViewModels
 
           private void addToDeck(CardTemplate template)
           {
-               string factionString = template.getFactionString();
-               for (var i = 0; i < _cardManager.completeDecks.Length; i++)
+               string factionString = ValuesRepository.getFactionString(template.factionIdx);
+               for (var i = 0; i < completeDecks.Length; i++)
                {
-                    foreach (GwintDeck deck in _cardManager.completeDecks[i])
+                    foreach (CardDeck deck in completeDecks[i])
                     {
-                         if (deck.deckName == factionString)
+                         if (deck.deckTypeName == factionString)
                          {
                               deck.cardIndicesInDeck.Add(template.index);
                          }
                     }
                }
-          }
-
-          protected void testCardsCalculations()
-          {
-               CardInstance cardInstance = null;
-               CardTemplate cardTemplate = null;
-               int counter = 0;
-               List<CardInstance> cardInstanceList = new List<CardInstance>();
-               Console.WriteLine("GFX --------------------------------------------------------- Commencing card test ---------------------------------------------------------");
-               Console.WriteLine("GFX ================================================== Creating temporary card instances ===================================================");
-               Dictionary<int, CardTemplate> templateDictionary = _cardManager._cardTemplates;
-               foreach (KeyValuePair<int, CardTemplate> entry in templateDictionary)
-               {
-                    cardTemplate = entry.Value;//entry.Key is int
-                    cardInstance = new CardInstance();
-                    cardInstance.templateId = cardTemplate.index;
-                    cardInstance.templateRef = cardTemplate;
-                    cardInstance.owningPlayer = CardManager.PLAYER_1;
-                    cardInstance.listsPlayer = CardManager.PLAYER_1;
-                    cardInstance.instanceId = 100;
-                    cardInstanceList.Add(cardInstance);
-               }
-               Console.WriteLine("GFX - Successfully created: {0} card instances", cardInstanceList.Count);
-               counter = 0;
-               while (counter < cardInstanceList.Count)
-               {
-                    Console.WriteLine("GFX - Checking Card with ID: {0} --------------------------", cardInstanceList[counter].templateId);
-                    Console.WriteLine("GFX ---------------------------------------------------------");
-                    Console.WriteLine("GFX - template Ref: " + cardInstanceList[counter].templateRef.title);
-                    Console.WriteLine("GFX - instance info: " + cardInstanceList[counter].toString());
-                    Console.WriteLine("GFX - recalculating optimal transaction for card");
-                    cardInstanceList[counter].recalculatePowerPotential(_cardManager);
-                    Console.WriteLine("GFX - successfully recalculated following power info: ");
-                    Console.WriteLine("GFX - " + cardInstanceList[counter].getOptimalTransaction().toString());
-                    ++counter;
-               }
-               Console.WriteLine("GFX ================================ Successfully Finished Test of Card Instances ====================================");
-               Console.WriteLine("GFX ------------------------------------------------------------------------------------------------------------------");
-          }
-
-          public CardSlot getSlot(CardInstance card)
-          {
-               Uri uri;
-               image = new Image();
-               uri = new Uri("pack://application:,,,/Images/Cards/" + card.templateRef.imageLoc + ".jpg");
-               image.Source = new BitmapImage(uri);
-               CardSlot result = new CardSlot { cardImage = image };
-               ReferenceSlot = result;
-               return result;
           }
 
           public void Previous()
@@ -393,25 +391,386 @@ namespace Gwent.ViewModels
                Title = "Gwent";
           }
 
+          public void convertToSlotInDeckHolder(int cardID, int playerID, int listID)
+          {
+               //get template from cardID
+               CardTemplate template = cardTemplates[cardID];
+
+               //Get image for template
+               Uri uri;
+               Image image = new Image();
+               uri = new Uri("pack://application:,,,/Images/Cards/" + template.imageLoc + ".jpg");
+               image.Source = new BitmapImage(uri);
+
+               //create new card slot with image
+               CardSlot cardSlot = new CardSlot
+               {
+                    cardImage = image,
+                    template = template,
+                    owningPlayer = playerID,
+                    owningHolder = listID,
+                    instance = Guid.NewGuid(),
+                    IsTransactionReady = false
+               };
+
+               //Add card slot to holder, to be displayed
+               Holders.ElementAt(playerID * 10 + listID).Add(cardSlot);
+          }
+
+          public void moveCard(CardSlot card, int listID)
+          {
+               bool cardFound = false;
+               //owning Holder= old; listID= new
+               foreach (var item in Holders.ElementAt(card.owningPlayer * 10 + card.owningHolder))
+               {
+                    if (item.instance == card.instance)
+                    {
+                         cardFound = true;
+                         Holders.ElementAt(card.owningPlayer * 10 + card.owningHolder).Remove(item);
+                         //Console.WriteLine("card {0} removed from holder {1} for player {2}", card.template.title, card.owningHolder, card.owningPlayer);
+                         break;
+                    }
+               }
+               if (cardFound)
+               {
+                    //TO DO add logic for spy and other types
+                    //Create new card slot instance
+                    CardSlot cardSlot = new CardSlot
+                    {
+                         cardImage = card.cardImage,
+                         template = card.template,
+                         owningPlayer = card.owningPlayer,
+                         owningHolder = listID,
+                         instance = Guid.NewGuid(),
+                         IsTransactionReady = card.IsTransactionReady
+                    };
+
+                    Holders.ElementAt(card.owningPlayer * 10 + listID).Add(cardSlot);
+                    //Console.WriteLine("card {0} added in holder {1} for player {2}", cardSlot.template.title, cardSlot.owningHolder, cardSlot.owningPlayer);
+               }
+               else
+               {
+                    throw new ArgumentNullException("not found");
+               }
+          }
+
+          public void startCardTransaction(CardSlot card)
+          {
+               SelectedCardSlot = card;
+               //TO DO implement logic for
+               /**
+               if leader
+               if has target
+               if global effect
+               **/
+               transferTransactionCardToDestination(card);
+          }
+
+          private async void transferTransactionCardToDestination(CardSlot card)
+          {
+               int destinationList = ValuesRepository.getLocation(card);
+               if (destinationList != ValuesRepository.CardType_None)
+               {
+                    SelectedCardSlot = null;
+                    //TO DO add logic for transaction enable
+                    card.IsTransactionReady = false;
+                    moveCard(card, card.owningPlayer * 10 + destinationList);
+                    //switch turn
+                    IsAITurn = !IsAITurn;
+                    await ValuesRepository.PutTaskDelay(1000);
+               }
+               else
+               {
+                    Console.WriteLine("wrong destination!");
+               }
+          }
+
+          //AI
+          private async void AITurn()
+          {
+               int t = await Task.Run(() => ChooseAttitude());
+               CurrentState = ValuesRepository.attitudeToString(AIAttitude);
+          }
+
+          private int ChooseAttitude()
+          {
+               //if zero cards in AI hand, don't waste time, and just pass…
+               if (P2HandHolder.Count == 0)
+               {
+                    AIAttitude = ValuesRepository.TACTIC_PASS;
+                    return AIAttitude;
+               }
+
+               //otherwise do some work :-)
+               //initialize dummy and spy potential counters
+               int dummies = 0;
+               int spies = 0;
+
+               //count the cards in hand, this is for debug, not cheating
+               int P2HandCards = P2HandHolder.Count;
+               int P1HandCards = P1HandHolder.Count;
+
+               int deltaCards = P2HandCards - P1HandCards;
+               int deltaScores = currentPlayerScores[ValuesRepository.PLAYER_2] - currentPlayerScores[ValuesRepository.PLAYER_1];
+
+               //check previous round status
+               bool P2PreviousWinner = false;
+               bool P1PreviousWinner = false;
+
+               int previousWinner = 0;
+               int roundResultsCounter = 0;
+               while (roundResultsCounter < roundResults.Count)
+               {
+                    if (roundResults[roundResultsCounter].played)
+                    {
+                         previousWinner = roundResults[roundResultsCounter].winningPlayer;
+                         if (previousWinner == ValuesRepository.PLAYER_2 || previousWinner == ValuesRepository.PLAYER_INVALID)
+                         {
+                              P2PreviousWinner = true;
+                         }
+                         if (previousWinner == ValuesRepository.PLAYER_1 || previousWinner == ValuesRepository.PLAYER_INVALID)
+                         {
+                              P1PreviousWinner = true;
+                         }
+                    }
+                    ++roundResultsCounter;
+               }
+
+               //set critical if needed
+               currentRoundCritical = P1PreviousWinner;
+
+               //check if opponent active or done
+               bool IsP1Active = currentRoundStatus[ValuesRepository.PLAYER_1];
+               SafeRandom random = new SafeRandom();
+
+               if (debug)
+               {
+                    Console.WriteLine("#AI# ###############################################################################");
+                    Console.WriteLine("#AI#---------------------------- AI Deciding his next move --------------------------------");
+                    Console.WriteLine("#AI#------ previousTactic: " + ValuesRepository.attitudeToString(AIAttitude));
+                    Console.WriteLine("#AI#------ playerCardsInHand: " + P2HandCards);
+                    Console.WriteLine("#AI#------ opponentCardsInHand: " + P1HandCards);
+                    Console.WriteLine("#AI#------ cardAdvantage: " + deltaCards);
+                    Console.WriteLine("#AI#------ scoreDifference: " + deltaScores + ", his score: " + currentPlayerScores[ValuesRepository.PLAYER_2] + ", enemy score: " + currentPlayerScores[ValuesRepository.PLAYER_1]);
+                    Console.WriteLine("#AI#------ opponent has won: " + P1PreviousWinner);
+                    Console.WriteLine("#AI#------ has won: " + P2PreviousWinner);
+                    Console.WriteLine("#AI#------ Num units in hand: " + P2HandCards);
+                    if (IsP1Active)
+                    {
+                         Console.WriteLine("#AI#------ has opponent passed: false");
+                    }
+                    else
+                    {
+                         Console.WriteLine("#AI#------ has opponent passed: true");
+                    }
+                    Console.WriteLine("#AI#=======================================================================================");
+                    Console.WriteLine("#AI#-----------------------------   AI CARDS AT HAND   ------------------------------------");
+
+                    foreach (CardSlot card in P2HandHolder)
+                    {
+                         Console.WriteLine("#AI# Points[ " + card.template.power + " ], Card - " + card.template.index + "  " + card.template.title);
+                    }
+                    Console.WriteLine("#AI#=======================================================================================");
+               }
+
+               //check for Nilfgaard faction, for tactic draw that ends in win
+               int P1DeckFaction = currentGameDecks[ValuesRepository.PLAYER_1].deckTypeIndex;
+               int P2DeckFaction = currentGameDecks[ValuesRepository.PLAYER_2].deckTypeIndex;
+               if (P2DeckFaction == ValuesRepository.FactionId_Nilfgaard &&
+                    P1DeckFaction != ValuesRepository.FactionId_Nilfgaard &&
+                    IsP1Active == false &&
+                    deltaScores == 0)
+               {
+                    AIAttitude = ValuesRepository.TACTIC_PASS;
+               }
+               //check if player passed and previous attitude
+               else if (!P1PreviousWinner && AIAttitude == ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS)
+               {
+                    if (IsP1Active)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS;
+                    }
+               }
+               //check AI hand for SPY and the opponent/player board for SPY
+               else if (!P1PreviousWinner &&
+                         ValuesRepository.playerHandHasEffect(P2HandHolder, ValuesRepository.CardEffect_Draw2) &&
+                         (random.NextDouble() < 0.2 || ValuesRepository.playerBoardHasEffect(ValuesRepository.PLAYER_1, ValuesRepository.CardEffect_Draw2)) &&
+                         AIAttitude != ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS)
+               {
+                    AIAttitude = ValuesRepository.TACTIC_SPY;
+               }
+               //if it found spy in AI hand, and previous SPY used, do it again
+               else if (AIAttitude == ValuesRepository.TACTIC_SPY &&
+                    ValuesRepository.playerHandHasEffect(P2HandHolder, ValuesRepository.CardEffect_Draw2))
+               {
+                    AIAttitude = ValuesRepository.TACTIC_SPY;
+               }
+               //if P1/Player is still active and didn't pass or card count 0
+               else if (IsP1Active)
+               {
+                    if (deltaScores > 0)
+                    {
+                         if (P1PreviousWinner)
+                         {
+                              AIAttitude = ValuesRepository.TACTIC_JUST_WAIT;
+                         }
+                         else
+                         {
+                              AIAttitude = ValuesRepository.TACTIC_NONE;
+                              if (P2PreviousWinner)
+                              {
+                                   dummies = ValuesRepository.getCardsInHandWithEffect(P2HandHolder, ValuesRepository.CardEffect_UnsummonDummy);
+                                   spies = ValuesRepository.getCardsInHandWithEffect(P2HandHolder, ValuesRepository.CardEffect_Draw2);
+                                   if (random.NextDouble() < 0.2 || P2HandCards == dummies + spies)
+                                   {
+                                        AIAttitude = ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS;
+                                   }
+                                   else
+                                   {
+                                        if (dummies > 0 && ValuesRepository.playerBoardCreatures(ValuesRepository.PLAYER_2).Count > 0 )
+                                        {
+                                             AIAttitude = ValuesRepository.TACTIC_WAIT_DUMMY;
+                                        }
+                                        else if (random.NextDouble() < deltaScores / 30 && random.NextDouble() < (P2HandHolder.Count * P2HandHolder.Count) / 36)
+                                        {
+                                             AIAttitude = ValuesRepository.TACTIC_MAXIMIZE_WIN;
+                                        }
+                                   }
+                              }
+                              if (AIAttitude == ValuesRepository.TACTIC_NONE)
+                              {
+                                   if (random.NextDouble() < P2HandCards / 10 || P2HandCards > 8)
+                                   {
+                                        if (random.NextDouble() < 0.2 || P2HandCards == dummies + spies)
+                                        {
+                                             AIAttitude = ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS;
+                                        }
+                                        else
+                                        {
+                                             AIAttitude = ValuesRepository.TACTIC_JUST_WAIT;
+                                        }
+                                   }
+                                   else
+                                   {
+                                        AIAttitude = ValuesRepository.TACTIC_PASS;
+                                   }
+                              }
+                         }
+                    }
+                    else if (P2PreviousWinner)
+                    {
+                         dummies = ValuesRepository.getCardsInHandWithEffect(P2HandHolder, ValuesRepository.CardEffect_UnsummonDummy);
+                         spies = ValuesRepository.getCardsInHandWithEffect(P2HandHolder, ValuesRepository.CardEffect_Draw2);
+                         if (!P1PreviousWinner && (random.NextDouble() < 0.2 || P2HandCards == dummies + spies))
+                         {
+                              AIAttitude = ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS;
+                         }
+                         else
+                         {
+                              AIAttitude = ValuesRepository.TACTIC_MAXIMIZE_WIN;
+                         }
+                    }
+                    else if (P1PreviousWinner)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_MINIMAL_WIN;
+                    }
+                    else if (!roundResults[0].played && deltaScores < -11 && 
+                         random.NextDouble() < (Math.Abs(deltaScores) - 10) / 20)
+                    {
+                         if (random.NextDouble() < 0.9)
+                         {
+                              AIAttitude = ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS;
+                         }
+                         else
+                         {
+                              AIAttitude = ValuesRepository.TACTIC_PASS;
+                         }
+                    }
+                    else if (random.NextDouble() < P2HandCards / 10)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_MINIMAL_WIN;
+                    }
+                    else if (random.NextDouble() < P2HandCards / 10)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_AVERAGE_WIN;
+                    }
+                    else if (random.NextDouble() < P2HandCards / 10)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_MAXIMIZE_WIN;
+                    }
+                    else if (P2HandCards <= 8 && 
+                         random.NextDouble() > P2HandCards / 10)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_PASS;
+                    }
+                    else
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_JUST_WAIT;
+                    }
+               }
+               else if (AIAttitude != ValuesRepository.TACTIC_MINIMIZE_LOSS)
+               {
+                    if (!P1PreviousWinner && deltaScores <= 0 && 
+                         random.NextDouble() < deltaScores / 20)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_MINIMIZE_LOSS;
+                    }
+                    else if (!P2PreviousWinner && deltaScores > 0)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_MINIMIZE_WIN;
+                    }
+                    else if (deltaScores > 0)
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_PASS;
+                    }
+                    else
+                    {
+                         AIAttitude = ValuesRepository.TACTIC_MINIMAL_WIN;
+                    }
+               }
+               else
+               {
+                    AIAttitude = ValuesRepository.TACTIC_MINIMIZE_LOSS;
+               }
+
+               return AIAttitude;
+          }
+
+          //sidekick
           public CardSlot SelectedCardSlot
           {
                get { return _SelectedCardSlotLocator(this).Value; }
-               set 
-               { 
+               set
+               {
                     _SelectedCardSlotLocator(this).SetValueAndTryNotify(value);
                     if (value != null)
                     {
-                         //if current player is Player( not AI)
-                         if (GwintGameFlowController.getInstance().currentPlayer == 0)
+                         if (value.owningPlayer == ValuesRepository.PLAYER_1 && value.owningHolder == ValuesRepository.CARD_LIST_LOC_HAND)
                          {
-                              HumanPlayerController hpc = (HumanPlayerController)GwintGameFlowController.getInstance().playerControllers[GwintGameFlowController.getInstance().currentPlayer];
-                              hpc.handleCardChosen();
+                              foreach (CardSlot card in P1HandHolder)
+                              {
+                                   Thickness margin = card.cardImage.Margin;
+                                   //Console.WriteLine("{0}, {1}", card.template.title, card.instance);
+                                   if (card == value && card.instance == value.instance)
+                                   {
+                                        margin.Bottom = 10;
+                                        margin.Top = -10;
+                                        card.cardImage.Margin = margin;
+                                   }
+                                   else
+                                   {
+                                        margin.Bottom = 0;
+                                        margin.Top = 0;
+                                        card.cardImage.Margin = margin;
+                                   }
+                              }
                          }
+
                          //show card zoom frame
                          CardZoomFrameVisibility = "Visible";
                     }
                     else
-                    { 
+                    {
                          //hide card zoom frame
                          CardZoomFrameVisibility = "Hidden";
                     }
@@ -422,18 +781,6 @@ namespace Gwent.ViewModels
           protected Property<CardSlot> _SelectedCardSlot = new Property<CardSlot> { LocatorFunc = _SelectedCardSlotLocator };
           static Func<BindableBase, ValueContainer<CardSlot>> _SelectedCardSlotLocator = RegisterContainerLocator<CardSlot>("SelectedCardSlot", model => model.Initialize("SelectedCardSlot", ref model._SelectedCardSlot, ref _SelectedCardSlotLocator, _SelectedCardSlotDefaultValueFactory));
           static Func<CardSlot> _SelectedCardSlotDefaultValueFactory = null;
-          #endregion
-
-          public CardSlot ReferenceSlot
-          {
-               get { return _ReferenceSlotLocator(this).Value; }
-               set { _ReferenceSlotLocator(this).SetValueAndTryNotify(value); }
-          }
-
-          #region Property CardSlot ReferenceSlot Setup
-          protected Property<CardSlot> _ReferenceSlot = new Property<CardSlot> { LocatorFunc = _ReferenceSlotLocator };
-          static Func<BindableBase, ValueContainer<CardSlot>> _ReferenceSlotLocator = RegisterContainerLocator<CardSlot>("ReferenceSlot", model => model.Initialize("ReferenceSlot", ref model._ReferenceSlot, ref _ReferenceSlotLocator, _ReferenceSlotDefaultValueFactory));
-          static Func<CardSlot> _ReferenceSlotDefaultValueFactory = null;
           #endregion
 
           public List<ObservableCollection<CardSlot>> Holders
@@ -507,7 +854,7 @@ namespace Gwent.ViewModels
           static Func<BindableBase, ValueContainer<ObservableCollection<CardSlot>>> _P2DeckHolderLocator = RegisterContainerLocator<ObservableCollection<CardSlot>>("P2DeckHolder", model => model.Initialize("P2DeckHolder", ref model._P2DeckHolder, ref _P2DeckHolderLocator, _P2DeckHolderDefaultValueFactory));
           static Func<ObservableCollection<CardSlot>> _P2DeckHolderDefaultValueFactory = null;
           #endregion
-          
+
           public ObservableCollection<CardSlot> P1HandHolder
           {
                get { return _P1HandHolderLocator(this).Value; }
@@ -699,7 +1046,7 @@ namespace Gwent.ViewModels
           static Func<BindableBase, ValueContainer<ObservableCollection<CardSlot>>> _P2MeleeModifHolderLocator = RegisterContainerLocator<ObservableCollection<CardSlot>>("P2MeleeModifHolder", model => model.Initialize("P2MeleeModifHolder", ref model._P2MeleeModifHolder, ref _P2MeleeModifHolderLocator, _P2MeleeModifHolderDefaultValueFactory));
           static Func<ObservableCollection<CardSlot>> _P2MeleeModifHolderDefaultValueFactory = null;
           #endregion
-          
+
           public double ObservedHeight
           {
                get { return _ObservedHeightLocator(this).Value; }
@@ -735,7 +1082,19 @@ namespace Gwent.ViewModels
           static Func<BindableBase, ValueContainer<String>> _CardZoomFrameVisibilityLocator = RegisterContainerLocator<String>("CardZoomFrameVisibility", model => model.Initialize("CardZoomFrameVisibility", ref model._CardZoomFrameVisibility, ref _CardZoomFrameVisibilityLocator, _CardZoomFrameVisibilityDefaultValueFactory));
           static Func<String> _CardZoomFrameVisibilityDefaultValueFactory = null;
           #endregion
-          
+
+          public String CurrentState
+          {
+               get { return _CurrentStateLocator(this).Value; }
+               set { _CurrentStateLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property String CurrentState Setup
+          protected Property<String> _CurrentState = new Property<String> { LocatorFunc = _CurrentStateLocator };
+          static Func<BindableBase, ValueContainer<String>> _CurrentStateLocator = RegisterContainerLocator<String>("CurrentState", model => model.Initialize("CurrentState", ref model._CurrentState, ref _CurrentStateLocator, _CurrentStateDefaultValueFactory));
+          static Func<String> _CurrentStateDefaultValueFactory = null;
+          #endregion
+
           public String DebugBorder
           {
                get { return _DebugBorderLocator(this).Value; }
@@ -758,6 +1117,60 @@ namespace Gwent.ViewModels
           protected Property<String> _Title = new Property<String> { LocatorFunc = _TitleLocator };
           static Func<BindableBase, ValueContainer<String>> _TitleLocator = RegisterContainerLocator<String>("Title", model => model.Initialize("Title", ref model._Title, ref _TitleLocator, _TitleDefaultValueFactory));
           static Func<String> _TitleDefaultValueFactory = () => "Title is Here";
+          #endregion
+
+          public bool currentRoundCritical
+          {
+               get { return _currentRoundCriticalLocator(this).Value; }
+               set { _currentRoundCriticalLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property bool currentRoundCritical Setup
+          protected Property<bool> _currentRoundCritical = new Property<bool> { LocatorFunc = _currentRoundCriticalLocator };
+          static Func<BindableBase, ValueContainer<bool>> _currentRoundCriticalLocator = RegisterContainerLocator<bool>("currentRoundCritical", model => model.Initialize("currentRoundCritical", ref model._currentRoundCritical, ref _currentRoundCriticalLocator, _currentRoundCriticalDefaultValueFactory));
+          static Func<bool> _currentRoundCriticalDefaultValueFactory = null;
+          #endregion
+
+          public bool IsAITurn
+          {
+               get { return _IsAITurnLocator(this).Value; }
+               set
+               {
+                    _IsAITurnLocator(this).SetValueAndTryNotify(value);
+                    if (value == true)//disabled P1 hand
+                    {
+                         foreach (CardSlot card in P1HandHolder)
+                         {
+                              card.IsTransactionReady = false;
+                         }
+                         CurrentState = "P2 Turn";
+                         AITurn();
+                         //TO DO implement AI
+                    }
+                    else
+                    {
+                         CurrentState = "P1 Turn";
+                         //TO DO implement AI
+                    }
+               }
+          }
+
+          #region Property bool IsAITurn Setup
+          protected Property<bool> _IsAITurn = new Property<bool> { LocatorFunc = _IsAITurnLocator };
+          static Func<BindableBase, ValueContainer<bool>> _IsAITurnLocator = RegisterContainerLocator<bool>("IsAITurn", model => model.Initialize("IsAITurn", ref model._IsAITurn, ref _IsAITurnLocator, _IsAITurnDefaultValueFactory));
+          static Func<bool> _IsAITurnDefaultValueFactory = null;
+          #endregion
+
+          public int AIAttitude
+          {
+               get { return _AIAttitudeLocator(this).Value; }
+               set { _AIAttitudeLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int AIAttitude Setup
+          protected Property<int> _AIAttitude = new Property<int> { LocatorFunc = _AIAttitudeLocator };
+          static Func<BindableBase, ValueContainer<int>> _AIAttitudeLocator = RegisterContainerLocator<int>("AIAttitude", model => model.Initialize("AIAttitude", ref model._AIAttitude, ref _AIAttitudeLocator, _AIAttitudeDefaultValueFactory));
+          static Func<int> _AIAttitudeDefaultValueFactory = null;
           #endregion
 
           #region Life Time Event Handling
@@ -817,6 +1230,23 @@ namespace Gwent.ViewModels
           //}
 
           #endregion
+
+          //Utilities
+          public string GetResourceTextFile(string filename)
+          {
+               string result = string.Empty;
+
+               using (Stream stream = this.GetType().Assembly.
+                    GetManifestResourceStream("Gwent.XML." + filename))
+               //GetManifestResourceStream("assembly.folder." + filename))
+               {
+                    using (StreamReader sr = new StreamReader(stream))
+                    {
+                         result = sr.ReadToEnd();
+                    }
+               }
+               return result;
+          }
      }
 }
 

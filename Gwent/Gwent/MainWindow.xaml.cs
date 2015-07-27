@@ -28,8 +28,6 @@ namespace Gwent
      /// </summary>
      public partial class MainWindow : MVVMWindow
      {
-          public static string gamePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-
           public MainWindow()
                : base(null)
           {

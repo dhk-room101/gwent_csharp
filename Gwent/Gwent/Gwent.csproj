@@ -129,6 +129,7 @@
     <Compile Include="Models\CardDeck.cs" />
     <Compile Include="Models\CardSlot.cs" />
     <Compile Include="Models\CardTemplate.cs" />
+    <Compile Include="Models\CardTransaction.cs" />
     <Compile Include="Models\GameRoundResult.cs" />
     <Compile Include="Models\SafeRandom.cs" />
     <Compile Include="PushBinding\FreezableBinding.cs" />

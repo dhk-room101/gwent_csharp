@@ -533,38 +533,17 @@ namespace Gwent.Core
                return false;
           }
 
-          public static bool cardIsType(CardSlot card, int typeID, int xorID = ValuesRepository.CardType_None)
+          public static bool cardIsType(CardSlot card, int typeID)
           {
-               bool typeFound = false;
-               bool xorFound = false;
-
                int counter = 0;
                while (counter < card.template.typeFlags.Count)
                {
                     if (card.template.typeFlags[counter] == typeID)
                     {
-                         typeFound = true;
+                         return true;
                     }
                     ++counter;
                }
-
-               if (xorID != ValuesRepository.CardType_None)
-               {
-                    while (counter < card.template.typeFlags.Count)
-                    {
-                         if (card.template.typeFlags[counter] == xorID)
-                         {
-                              xorFound = true;
-                         }
-                         ++counter;
-                    }
-               }
-
-               if (typeFound && !xorFound)
-               {
-                    return true;
-               }
-
                return false;
           }
 
@@ -577,7 +556,8 @@ namespace Gwent.Core
                holder = MainWindow_ViewModel.mSingleton.Holders.ElementAt(playerID * 10 + CARD_LIST_LOC_MELEE);
                foreach (CardSlot card in holder)
                {
-                    if (cardIsType(card, ValuesRepository.CardType_Creature, ValuesRepository.CardType_Hero))
+                    if (cardIsType(card, ValuesRepository.CardType_Creature) &&
+                         !cardIsType(card, ValuesRepository.CardType_Hero))
                     {
                          result.Add(card);
                     }
@@ -587,7 +567,8 @@ namespace Gwent.Core
                holder = MainWindow_ViewModel.mSingleton.Holders.ElementAt(playerID * 10 + CARD_LIST_LOC_RANGED);
                foreach (CardSlot card in holder)
                {
-                    if (cardIsType(card, ValuesRepository.CardType_Creature, ValuesRepository.CardType_Hero))
+                    if (cardIsType(card, ValuesRepository.CardType_Creature) &&
+                         !cardIsType(card, ValuesRepository.CardType_Hero))
                     {
                          result.Add(card);
                     }
@@ -597,13 +578,119 @@ namespace Gwent.Core
                holder = MainWindow_ViewModel.mSingleton.Holders.ElementAt(playerID * 10 + CARD_LIST_LOC_SEIGE);
                foreach (CardSlot card in holder)
                {
-                    if (cardIsType(card, ValuesRepository.CardType_Creature, ValuesRepository.CardType_Hero))
+                    if (cardIsType(card, ValuesRepository.CardType_Creature) &&
+                         !cardIsType(card, ValuesRepository.CardType_Hero))
                     {
                          result.Add(card);
                     }
                }
 
                return result;
+          }
+
+          public static int getPowerChange(CardSlot card)
+          {
+               //TO DO implement more power changes, 
+               //currently Row Modifiers and Weather only
+
+               int power = card.template.power;
+               int playerID = PLAYER_INVALID;
+               //check if spy
+               if (cardHasEffect(card, CardEffect_Draw2))
+               {
+                    if (card.owningPlayer == PLAYER_1)
+                    {
+                         playerID = PLAYER_2;
+                    }
+                    else if (card.owningPlayer == PLAYER_2)
+                    {
+                         playerID = PLAYER_1;
+                    }
+               }
+               else
+               {
+                    playerID = card.owningPlayer;
+               }
+
+               //check for modifiers for player 1
+               if (playerID == PLAYER_1)
+               {
+                    if (cardIsType(card, CardType_Melee))
+                    {
+                         if (MainWindow_ViewModel.mSingleton.P1MeleeModifHolder.Count > 0)
+                         {
+                              power = power * 2;
+                         }
+                    }
+                    if (cardIsType(card, CardType_Ranged))
+                    {
+                         if (MainWindow_ViewModel.mSingleton.P1RangeModifHolder.Count > 0)
+                         {
+                              power = power * 2;
+                         }
+                    }
+                    if (cardIsType(card, CardType_Siege))
+                    {
+                         if (MainWindow_ViewModel.mSingleton.P1SiegeModifHolder.Count > 0)
+                         {
+                              power = power * 2;
+                         }
+                    }
+               }
+
+               //check for modifiers for player 2
+               if (playerID == PLAYER_2)
+               {
+                    if (cardIsType(card, CardType_Melee))
+                    {
+                         if (MainWindow_ViewModel.mSingleton.P2MeleeModifHolder.Count > 0)
+                         {
+                              power = power * 2;
+                         }
+                    }
+                    if (cardIsType(card, CardType_Ranged))
+                    {
+                         if (MainWindow_ViewModel.mSingleton.P2RangeModifHolder.Count > 0)
+                         {
+                              power = power * 2;
+                         }
+                    }
+                    if (cardIsType(card, CardType_Siege))
+                    {
+                         if (MainWindow_ViewModel.mSingleton.P2SiegeModifHolder.Count > 0)
+                         {
+                              power = power * 2;
+                         }
+                    }
+               }
+
+               //Check for weather modifiers
+               if (MainWindow_ViewModel.mSingleton.WeatherHolder.Count > 0)
+               {
+                    foreach (CardSlot weather in MainWindow_ViewModel.mSingleton.WeatherHolder)
+                    {
+                         if ( cardIsType(weather, CardType_Melee) &&
+                              cardIsType(card, CardType_Melee))
+                         {
+                              power = 1;
+                              return power;
+                         }
+                         if (cardIsType(weather, CardType_Ranged) &&
+                              cardIsType(card, CardType_Ranged))
+                         {
+                              power = 1;
+                              return power;
+                         }
+                         if (cardIsType(weather, CardType_Siege) &&
+                              cardIsType(card, CardType_Siege))
+                         {
+                              power = 1;
+                              return power;
+                         }
+                    }
+               }
+
+               return power;
           }
      }
 }

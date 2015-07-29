@@ -8,8 +8,7 @@
         xmlns:mvvm="clr-namespace:MVVMSidekick.Views;assembly=MVVMSidekick"        
         xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         xmlns:vm="clr-namespace:Gwent.ViewModels"
-        WindowState="Maximized" WindowStyle="None"
-                 >
+        WindowState="Maximized" WindowStyle="None">
      <FrameworkElement.Resources>
           <vm:MainWindow_ViewModel x:Key="MainVM"/>
           <converters:PercentageConverter x:Key="PercentageConverter"/>
@@ -39,22 +38,61 @@
                     <RowDefinition Height="132*"/>
                     <RowDefinition Height="219*"/>
                </Grid.RowDefinitions>
-               <DockPanel Grid.Row="0">
-                    <!--AILeaderAndStats-->
-                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                    </Border>
-               </DockPanel>
+               <Grid Grid.Row="0">
+                    <!--P2LeaderAndStats-->
+                    <Grid.RowDefinitions>
+                         <RowDefinition Height="136*"/>
+                         <RowDefinition Height="66*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="1">
+                         <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="84*"/>
+                              <ColumnDefinition Width="11*"/>
+                              <ColumnDefinition Width="4*"/>
+                         </Grid.ColumnDefinitions>
+                         <Grid Grid.Column="1">
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="13*"/>
+                                   <RowDefinition Height="26*"/>
+                                   <RowDefinition Height="27*"/>
+                              </Grid.RowDefinitions>
+                              <!--P2Score-->
+                              <TextBlock Grid.Row="1" Text="{Binding P2Score}" 
+                              FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.8}" 
+                              Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
+                    </Grid>
+               </Grid>
                <DockPanel Grid.Row="1">
                     <!--Weather-->
                     <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                     </Border>
                </DockPanel>
-               <DockPanel Grid.Row="2">
-                    <!--PlayerLeaderAndStats-->
-                    <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                         <TextBox Text="{Binding CurrentState}" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="30" Width="250" FontSize="24"/>
-                    </Border>
-               </DockPanel>
+               <Grid Grid.Row="2">
+                    <!--P1LeaderAndStats-->
+                    <Grid.RowDefinitions>
+                         <RowDefinition Height="66*"/>
+                         <RowDefinition Height="136*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                         <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="84*"/>
+                              <ColumnDefinition Width="11*"/>
+                              <ColumnDefinition Width="4*"/>
+                         </Grid.ColumnDefinitions>
+                         <Grid Grid.Column="1">
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="26*"/>
+                                   <RowDefinition Height="20*"/>
+                              </Grid.RowDefinitions>
+                              <!--P1Score-->
+                              <TextBlock Grid.Row="1" Text="{Binding P1Score}" 
+                              FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.8}" 
+                              Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
+                    </Grid>
+               </Grid>
           </Grid>
           <Grid Grid.Column="1">
                <!--gridMiddle-->
@@ -82,10 +120,22 @@
                               <ColumnDefinition Width="0.13*"/>
                               <ColumnDefinition Width="0.80*"/>
                          </Grid.ColumnDefinitions>
-                         <DockPanel Grid.Row="0" Grid.Column="0" x:Name="AISiegeScore">
-                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                              </Border>
-                         </DockPanel>
+                         <Grid Grid.Row="0" Grid.Column="0">
+                              <!--P2SiegeScore-->
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="28*"/>
+                                   <RowDefinition Height="17*"/>
+                              </Grid.RowDefinitions>
+                              <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="0.1*"/>
+                                   <ColumnDefinition Width="0.8*"/>
+                                   <ColumnDefinition Width="0.1*"/>
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding P2SiegeScore}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.6}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
                          <DockPanel Grid.Row="0" Grid.Column="1" x:Name="P2SiegeModifHolder">
                               <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                                    <ItemsControl ItemsSource="{Binding Path=P2SiegeModifHolder, Mode=TwoWay}">
@@ -101,11 +151,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -129,11 +195,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -142,10 +224,22 @@
                                    </ItemsControl>
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="1" Grid.Column="0" x:Name="AIRangeScore">
-                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                              </Border>
-                         </DockPanel>
+                         <Grid Grid.Row="1" Grid.Column="0">
+                              <!--P2RangeScore-->
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="28*"/>
+                                   <RowDefinition Height="17*"/>
+                              </Grid.RowDefinitions>
+                              <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="0.1*"/>
+                                   <ColumnDefinition Width="0.8*"/>
+                                   <ColumnDefinition Width="0.1*"/>
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding P2RangeScore}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.6}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
                          <DockPanel Grid.Row="1" Grid.Column="1" x:Name="P2RangeModifHolder">
                               <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                                    <ItemsControl ItemsSource="{Binding Path=P2RangeModifHolder, Mode=TwoWay}">
@@ -161,11 +255,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -189,11 +299,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -202,10 +328,22 @@
                                    </ItemsControl>
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="2" Grid.Column="0" x:Name="AIMeleeScore">
-                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                              </Border>
-                         </DockPanel>
+                         <Grid Grid.Row="2" Grid.Column="0">
+                              <!--P2MeleeScore-->
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="28*"/>
+                                   <RowDefinition Height="17*"/>
+                              </Grid.RowDefinitions>
+                              <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="0.1*"/>
+                                   <ColumnDefinition Width="0.8*"/>
+                                   <ColumnDefinition Width="0.1*"/>
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding P2MeleeScore}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.6}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
                          <DockPanel Grid.Row="2" Grid.Column="1" x:Name="P2MeleeModifHolder">
                               <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                                    <ItemsControl ItemsSource="{Binding Path=P2MeleeModifHolder, Mode=TwoWay}">
@@ -221,11 +359,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -249,11 +403,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -275,10 +445,22 @@
                               <ColumnDefinition Width="0.13*"/>
                               <ColumnDefinition Width="0.80*"/>
                          </Grid.ColumnDefinitions>
-                         <DockPanel Grid.Row="0" Grid.Column="0" x:Name="PlayerMeleeScore">
-                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                              </Border>
-                         </DockPanel>
+                         <Grid Grid.Row="0" Grid.Column="0">
+                              <!--P1MeleeScore-->
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="28*"/>
+                                   <RowDefinition Height="17*"/>
+                              </Grid.RowDefinitions>
+                              <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="0.1*"/>
+                                   <ColumnDefinition Width="0.8*"/>
+                                   <ColumnDefinition Width="0.1*"/>
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding P1MeleeScore}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.6}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
                          <DockPanel Grid.Row="0" Grid.Column="1" x:Name="P1MeleeModifHolder">
                               <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                                    <ItemsControl ItemsSource="{Binding Path=P1MeleeModifHolder, Mode=TwoWay}">
@@ -294,11 +476,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" IsEnabled="{Binding IsTransactionReady}">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -322,11 +520,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" IsEnabled="{Binding IsTransactionReady}">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -335,10 +549,22 @@
                                    </ItemsControl>
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="1" Grid.Column="0" x:Name="PlayerRangeScore">
-                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                              </Border>
-                         </DockPanel>
+                         <Grid Grid.Row="1" Grid.Column="0">
+                              <!--P1RangeScore-->
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="28*"/>
+                                   <RowDefinition Height="17*"/>
+                              </Grid.RowDefinitions>
+                              <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="0.1*"/>
+                                   <ColumnDefinition Width="0.8*"/>
+                                   <ColumnDefinition Width="0.1*"/>
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding P1RangeScore}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.6}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
                          <DockPanel Grid.Row="1" Grid.Column="1" x:Name="P1RangeModifHolder">
                               <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                                    <ItemsControl ItemsSource="{Binding Path=P1RangeModifHolder, Mode=TwoWay}">
@@ -354,11 +580,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" IsEnabled="{Binding IsTransactionReady}">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -382,11 +624,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" IsEnabled="{Binding IsTransactionReady}">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -395,10 +653,22 @@
                                    </ItemsControl>
                               </Border>
                          </DockPanel>
-                         <DockPanel Grid.Row="2" Grid.Column="0" x:Name="PlayerSiegeScore">
-                              <Border DockPanel.Dock="Top" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
-                              </Border>
-                         </DockPanel>
+                         <Grid Grid.Row="2" Grid.Column="0">
+                              <!--P1SiegeScore-->
+                              <Grid.RowDefinitions>
+                                   <RowDefinition Height="20*"/>
+                                   <RowDefinition Height="28*"/>
+                                   <RowDefinition Height="17*"/>
+                              </Grid.RowDefinitions>
+                              <Grid.ColumnDefinitions>
+                                   <ColumnDefinition Width="0.1*"/>
+                                   <ColumnDefinition Width="0.8*"/>
+                                   <ColumnDefinition Width="0.1*"/>
+                              </Grid.ColumnDefinitions>
+                              <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding P1SiegeScore}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.6}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                         </Grid>
                          <DockPanel Grid.Row="2" Grid.Column="1" x:Name="P1SiegeModifHolder">
                               <Border DockPanel.Dock="Right" BorderThickness="{Binding DebugBorder}" BorderBrush="#FFDCDCDC">
                                    <ItemsControl ItemsSource="{Binding Path=P1SiegeModifHolder, Mode=TwoWay}">
@@ -414,11 +684,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" IsEnabled="{Binding IsTransactionReady}">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -442,11 +728,27 @@
                                                             <RowDefinition Height="0.024*"/>
                                                             <RowDefinition Height="0.976*"/>
                                                        </Grid.RowDefinitions>
-                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" IsEnabled="{Binding IsTransactionReady}">
+                                                       <Button Grid.Row="1" Command="{Binding CommandEvaluateClick}" Background="Transparent" Margin="{Binding cardImage.Margin}" IsEnabled="{Binding IsTransactionReady}">
                                                             <Grid>
-                                                                 <Image Source="{Binding cardImage.Source}"/>
-                                                                 <Rectangle Fill="Black" Height="20" Width="15" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                                                                 <TextBlock Text="{Binding template.power}" FontSize="18" Foreground="AntiqueWhite" HorizontalAlignment="Left" VerticalAlignment="Top" TextAlignment="Center"/>
+                                                                 <Grid.RowDefinitions>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                      <RowDefinition Height="0.08*"/>
+                                                                      <RowDefinition Height="0.25*"/>
+                                                                 </Grid.RowDefinitions>
+                                                                 <Grid.ColumnDefinitions>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                      <ColumnDefinition Width="0.33*"/>
+                                                                 </Grid.ColumnDefinitions>
+                                                                 <Image Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="5" Source="{Binding cardImage.Source}"/>
+                                                                 <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
+                                                                            FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
+                                                                            Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
                                                        </Button>
                                                   </Grid>
@@ -503,7 +805,7 @@
                                                                  <Image Grid.Column="0" Grid.Row="0" Source="Images/Icons/icon_power.png" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                                                  <Image Grid.Column="0" Grid.Row="4" Source="{Binding template.effectFlags, Converter={StaticResource ConverterIconEffect}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                                                  <Image Grid.Column="2" Grid.Row="4" Source="{Binding template.typeFlags, Converter={StaticResource ConverterIconType}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding template.power}" 
+                                                                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding power}" 
                                                                             FontSize="{Binding Converter={StaticResource PercentageConverter},RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Grid}},Path=ActualWidth,ConverterParameter=0.25}" 
                                                                             Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                             </Grid>
@@ -516,6 +818,7 @@
                               </Border>
                          </DockPanel>
                     </Grid>
+                    <TextBox Grid.Row="1" Text="{Binding CurrentState}" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="30" Width="250" FontSize="20"/>
                </Grid>
           </Grid>
           <!--Players decks + graveyards + CardZoom-->

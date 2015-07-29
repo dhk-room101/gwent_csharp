@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-d:\Work\VS13\Gwent\Gwent\obj\Debug\
+d:\Work\VS\Gwent\Gwent\obj\Debug\
 Gwent
 none
 false
 DEBUG;TRACE
-d:\Work\VS13\Gwent\Gwent\App.xaml
+d:\Work\VS\Gwent\Gwent\App.xaml
 11151548125
 
-24-121647567
-80754789638
+252113603562
+80353654687
 MainWindow.xaml;
 
-True
+False
 

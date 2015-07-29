@@ -17,6 +17,7 @@ namespace Gwent.Models
           public int owningPlayer { get; set; }
           public int owningHolder { get; set; }
           public CardTemplate template { get; set; }
+          public int power { get; set; }
           public Guid instance { get; set; }
 
           //local
@@ -29,6 +30,7 @@ namespace Gwent.Models
                owningPlayer = ValuesRepository.PLAYER_INVALID;
                owningHolder = ValuesRepository.CARD_LIST_LOC_INVALID;
                template = new CardTemplate { index = ValuesRepository.TEMPLATE_INVALID };
+               power = 0;
                instance = Guid.NewGuid();
                IsTransactionReady = false;
           }
@@ -137,6 +139,18 @@ namespace Gwent.Models
           protected Property<bool> _IsTransactionReady = new Property<bool> { LocatorFunc = _IsTransactionReadyLocator };
           static Func<BindableBase, ValueContainer<bool>> _IsTransactionReadyLocator = RegisterContainerLocator<bool>("IsTransactionReady", model => model.Initialize("IsTransactionReady", ref model._IsTransactionReady, ref _IsTransactionReadyLocator, _IsTransactionReadyDefaultValueFactory));
           static Func<bool> _IsTransactionReadyDefaultValueFactory = null;
+          #endregion
+
+          public CardTransaction OptimalTransaction
+          {
+               get { return _OptimalTransactionLocator(this).Value; }
+               set { _OptimalTransactionLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property CardTransaction OptimalTransaction Setup
+          protected Property<CardTransaction> _OptimalTransaction = new Property<CardTransaction> { LocatorFunc = _OptimalTransactionLocator };
+          static Func<BindableBase, ValueContainer<CardTransaction>> _OptimalTransactionLocator = RegisterContainerLocator<CardTransaction>("OptimalTransaction", model => model.Initialize("OptimalTransaction", ref model._OptimalTransaction, ref _OptimalTransactionLocator, _OptimalTransactionDefaultValueFactory));
+          static Func<CardTransaction> _OptimalTransactionDefaultValueFactory = null;
           #endregion
      }
 }

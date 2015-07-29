@@ -27,9 +27,11 @@ namespace Gwent.ViewModels
           public List<GameRoundResult> roundResults { get; set; }
           public List<int> currentPlayerScores { get; set; }
           public bool[] currentRoundStatus { get; set; }
-
+          
           public MainWindow_ViewModel()
           {
+               //TO DO card values
+
                Title = "Gwent";
 
                mSingleton = this;
@@ -40,8 +42,6 @@ namespace Gwent.ViewModels
 
                InitializeHolders();
 
-               //CardManager.getInstance().cardValues = new GwintCardValues();
-
                //create empty decks
                createDecks();
 
@@ -49,8 +49,6 @@ namespace Gwent.ViewModels
                getCardTemplates();
 
                if (debug) { randomizeFaction(); }
-
-               InitializeRenderers();
           }
 
           private void InitializeVariables()
@@ -73,6 +71,17 @@ namespace Gwent.ViewModels
                currentPlayerScores.Add(0);
                currentPlayerScores.Add(0);
 
+               //Initialize the scores used for display
+               P1MeleeScore = 0;
+               P1RangeScore = 0;
+               P1SiegeScore = 0;
+               P1Score = P1MeleeScore + P1RangeScore + P1SiegeScore;
+
+               P2MeleeScore = 0;
+               P2RangeScore = 0;
+               P2SiegeScore = 0;
+               P2Score = P2MeleeScore + P2RangeScore + P2SiegeScore;
+
                //Initialize current round status: true/active, false/pass
                currentRoundStatus = new bool[2];
                currentRoundStatus[ValuesRepository.PLAYER_1] = true;//active
@@ -87,20 +96,6 @@ namespace Gwent.ViewModels
                SelectedCardSlot = null;
                IsAITurn = false;
                AIAttitude = ValuesRepository.TACTIC_NONE;
-          }
-
-          private void InitializeRenderers()
-          {
-               /*//board renderer
-               mcBoardRenderer = new GwintBoardRenderer();
-               CardManager.getInstance().boardRenderer = mcBoardRenderer;
-
-               //players renderers
-               mcPlayer1Renderer = new GwintPlayerRenderer { playerID = 0, playerName = "player" };
-               mcPlayer2Renderer = new GwintPlayerRenderer { playerID = 1, playerName = "AI" };
-
-               CardManager.getInstance().playerRenderers.Add(mcPlayer1Renderer);
-               CardManager.getInstance().playerRenderers.Add(mcPlayer2Renderer);*/
           }
 
           private void InitializeHolders()
@@ -186,9 +181,7 @@ namespace Gwent.ViewModels
                while (i < 10)
                {
                     await ValuesRepository.PutTaskDelay(500);
-                    //statically search the deck, excluding the last 4, which are leaders
-                    //TO DO if possible, make it more dynamic
-                    int cardIndex = random.Next(Holders.ElementAt(playerID * 10 + ValuesRepository.CARD_LIST_LOC_DECK).Count - 4);
+                    int cardIndex = random.Next(Holders.ElementAt(playerID * 10 + ValuesRepository.CARD_LIST_LOC_DECK).Count);
                     CardSlot cardSlot = Holders.ElementAt(playerID * 10 + ValuesRepository.CARD_LIST_LOC_DECK).ElementAt(cardIndex);
                     if (playerID == ValuesRepository.PLAYER_1)
                     {
@@ -341,7 +334,11 @@ namespace Gwent.ViewModels
 
                                    cardTemplates[index] = template;
 
-                                   addToDeck(template);
+                                   //TO DO handle leaders
+                                   if (index < 1000)
+                                   {
+                                        addToDeck(template);
+                                   }
                               }
                          }
 
@@ -407,6 +404,7 @@ namespace Gwent.ViewModels
                {
                     cardImage = image,
                     template = template,
+                    power = template.power,
                     owningPlayer = playerID,
                     owningHolder = listID,
                     instance = Guid.NewGuid(),
@@ -434,19 +432,19 @@ namespace Gwent.ViewModels
                if (cardFound)
                {
                     //TO DO add logic for spy and other types
-                    //Create new card slot instance
-                    CardSlot cardSlot = new CardSlot
-                    {
-                         cardImage = card.cardImage,
-                         template = card.template,
-                         owningPlayer = card.owningPlayer,
-                         owningHolder = listID,
-                         instance = Guid.NewGuid(),
-                         IsTransactionReady = card.IsTransactionReady
-                    };
+                    //TO DO add logic for actual power if any effect
+                    card.owningHolder = listID;
 
-                    Holders.ElementAt(card.owningPlayer * 10 + listID).Add(cardSlot);
+                    //reset margin back to zero, it was changed during selected stage
+                    Thickness margin = card.cardImage.Margin;
+                    margin.Bottom = 0;
+                    margin.Top = 0;
+                    card.cardImage.Margin = margin;
+
+                    Holders.ElementAt(card.owningPlayer * 10 + listID).Add(card);
                     //Console.WriteLine("card {0} added in holder {1} for player {2}", cardSlot.template.title, cardSlot.owningHolder, cardSlot.owningPlayer);
+
+                    RecalculateScore();
                }
                else
                {
@@ -454,6 +452,7 @@ namespace Gwent.ViewModels
                }
           }
 
+          //this is the entry point for handling transactions
           public void startCardTransaction(CardSlot card)
           {
                SelectedCardSlot = card;
@@ -474,7 +473,8 @@ namespace Gwent.ViewModels
                     SelectedCardSlot = null;
                     //TO DO add logic for transaction enable
                     card.IsTransactionReady = false;
-                    moveCard(card, card.owningPlayer * 10 + destinationList);
+                    //moveCard(card, card.owningPlayer * 10 + destinationList);
+                    moveCard(card, destinationList);
                     //switch turn
                     IsAITurn = !IsAITurn;
                     await ValuesRepository.PutTaskDelay(1000);
@@ -488,8 +488,37 @@ namespace Gwent.ViewModels
           //AI
           private async void AITurn()
           {
+               CurrentState = "AI choosing strategy…";
+               await ValuesRepository.PutTaskDelay(2000);
+
                int t = await Task.Run(() => ChooseAttitude());
+
                CurrentState = ValuesRepository.attitudeToString(AIAttitude);
+               await ValuesRepository.PutTaskDelay(1000);
+
+               CardTransaction decided = await Task.Run(() => DecideCard());
+               if (decided == null && AIAttitude != ValuesRepository.TACTIC_PASS)
+               {
+                    AIAttitude = ValuesRepository.TACTIC_PASS;
+               }
+
+               CurrentState = "AI Deciding Hand";
+               await ValuesRepository.PutTaskDelay(2000);
+               
+               //TO DO implement weather and such criteria, besides dummies and spies
+               //Also implement attitude if critical round
+               if ( decided != null && decided.sourceCard != null)
+               {
+                    
+                    Console.WriteLine("#AI# - AI decided on the following transaction: {0}, {1}", decided.sourceCard.template.index, decided.sourceCard.template.title);
+                    //TO DO implement spy and targets
+
+                    SelectedCardSlot = decided.sourceCard;
+                    CurrentState = "AI Playing Card";
+                    await ValuesRepository.PutTaskDelay(2000);
+
+                    startCardTransaction(decided.sourceCard);
+               }
           }
 
           private int ChooseAttitude()
@@ -507,10 +536,10 @@ namespace Gwent.ViewModels
                int spies = 0;
 
                //count the cards in hand, this is for debug, not cheating
-               int P2HandCards = P2HandHolder.Count;
-               int P1HandCards = P1HandHolder.Count;
+               double P2HandCards = Convert.ToDouble(P2HandHolder.Count);
+               double P1HandCards = Convert.ToDouble(P1HandHolder.Count);
 
-               int deltaCards = P2HandCards - P1HandCards;
+               double deltaCards = P2HandCards - P1HandCards;
                int deltaScores = currentPlayerScores[ValuesRepository.PLAYER_2] - currentPlayerScores[ValuesRepository.PLAYER_1];
 
                //check previous round status
@@ -734,6 +763,427 @@ namespace Gwent.ViewModels
                }
 
                return AIAttitude;
+          }
+
+          private CardTransaction DecideCard()
+          {
+               //unless noted otherwise, any sorting is done considering effects applied, not the default template power
+               //IE: power considers effect/s, template.power considers the default value
+               CardTransaction result = new CardTransaction();
+               int deltaScores = currentPlayerScores[ValuesRepository.PLAYER_2] - currentPlayerScores[ValuesRepository.PLAYER_1];
+               SafeRandom random = new SafeRandom();
+
+               switch (AIAttitude)
+               {
+                    case ValuesRepository.TACTIC_SPY_DUMMY_BEST_THEN_PASS:
+                         {
+                              //get SPY/SPIES if any
+                              List<CardSlot> spies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_Draw2))
+                                   {
+                                        spies.Add(card);
+                                   }
+                              }
+
+                              //Sort ascending the list if multiple spies, and pick hero or smallest?
+                              if (spies.Count > 0)
+                              {
+                                   List<CardSlot> SortedSpies = spies.OrderBy(o => o.power).ToList();
+                                   result.sourceCard = SortedSpies.ElementAt(0);
+                                   return result;
+                              }
+
+                              //get DUMMY/DUMMIES if any
+                              List<CardSlot> dummies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_UnsummonDummy))
+                                   {
+                                        dummies.Add(card);
+                                   }
+                              }
+
+                              if (dummies.Count > 0)//no need to sort
+                              {
+                                   result.sourceCard = dummies.ElementAt(0);
+                                   //sort descending the creatures on the AI board, and get the highest
+                                   List<CardSlot> AIBoard = ValuesRepository.playerBoardCreatures(ValuesRepository.PLAYER_2);
+                                   if (AIBoard.Count > 0)
+                                   {
+                                        CardSlot target = AIBoard.OrderByDescending(o => o.power).ToList().ElementAt(0);
+                                        result.targetCard = target;
+                                   }
+                                   
+                                   return result;
+                              }
+
+                              //if for some reason spies and dummies failed
+                              AIAttitude = ValuesRepository.TACTIC_PASS;
+                              break;
+                         }
+                    case ValuesRepository.TACTIC_MINIMIZE_LOSS:
+                         {
+                              //get DUMMY/DUMMIES if any
+                              List<CardSlot> dummies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_UnsummonDummy))
+                                   {
+                                        dummies.Add(card);
+                                   }
+                              }
+
+                              if (dummies.Count > 0)//no need to sort
+                              {
+                                   result.sourceCard = dummies.ElementAt(0);
+                                   //sort descending the creatures on the AI board, and get the highest
+                                   List<CardSlot> AIBoard = ValuesRepository.playerBoardCreatures(ValuesRepository.PLAYER_2);
+                                   if (AIBoard.Count > 0)
+                                   {
+                                        CardSlot target = AIBoard.OrderByDescending(o => o.power).ToList().ElementAt(0);
+                                        result.targetCard = target;
+                                   }
+
+                                   return result;
+                              }
+
+                              //get SPY/SPIES if any
+                              List<CardSlot> spies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_Draw2))
+                                   {
+                                        spies.Add(card);
+                                   }
+                              }
+
+                              //Sort ascending the list if multiple spies, and pick hero or smallest?
+                              if (spies.Count > 0)
+                              {
+                                   List<CardSlot> SortedSpies = spies.OrderBy(o => o.power).ToList();
+                                   result.sourceCard = SortedSpies.ElementAt(0);
+                                   return result;
+                              }
+
+                              //if for some reason spies and dummies failed
+                              AIAttitude = ValuesRepository.TACTIC_PASS;
+                              break;
+                         }
+                    case ValuesRepository.TACTIC_MINIMIZE_WIN:
+                         {
+                              //get DUMMY/DUMMIES if any
+                              List<CardSlot> dummies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_UnsummonDummy))
+                                   {
+                                        dummies.Add(card);
+                                   }
+                              }
+
+                              if (dummies.Count > 0)//no need to sort
+                              {
+                                   result.sourceCard = dummies.ElementAt(0);
+                                   //sort ascending the creatures on the AI board, and get the the first bigger than deltaScores
+                                   List<CardSlot> AIBoard = ValuesRepository.playerBoardCreatures(ValuesRepository.PLAYER_2);
+                                   if (AIBoard.Count > 0)
+                                   {
+                                        List<CardSlot> creatures = AIBoard.OrderBy(o => o.power).ToList();
+                                        foreach (CardSlot creature in creatures)
+                                        {
+                                             if (creature.power > deltaScores)
+                                             {
+                                                  result.targetCard = creature;
+                                                  return result;
+                                             }
+                                        }
+                                   }
+                              }
+
+                              //get SPY/SPIES if any
+                              List<CardSlot> spies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_Draw2))
+                                   {
+                                        spies.Add(card);
+                                   }
+                              }
+
+                              //Sort ascending the list if multiple spies, and pick hero or smallest?
+                              if (spies.Count > 0)
+                              {
+                                   List<CardSlot> SortedSpies = spies.OrderBy(o => o.power).ToList();
+                                   foreach (CardSlot spy in SortedSpies)
+                                   {
+                                        if (ValuesRepository.getPowerChange(spy) < Math.Abs(deltaScores))
+                                        {
+                                             result.sourceCard = spy;
+                                             return result;
+                                        }
+                                   }
+                              }
+
+                              //if for some reason spies and dummies failed
+                              AIAttitude = ValuesRepository.TACTIC_PASS;
+                              break;
+                         }
+                    case ValuesRepository.TACTIC_MAXIMIZE_WIN:
+                         {
+                              List<CardSlot> hand = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   CardSlot temp = new CardSlot();
+                                   temp.instance = card.instance;//to match GUID
+                                   hand.Add(temp);
+                              }
+
+                              foreach (CardSlot temp in hand)
+                              {
+                                   temp.power = ValuesRepository.getPowerChange(temp);
+                              }
+
+                              List<CardSlot> SortedHand = hand.OrderByDescending(o => o.power).ToList();
+                              if (SortedHand.Count > 0)
+                              {
+                                   foreach (CardSlot card in P2HandHolder)
+                                   {
+                                        if (card.instance == SortedHand.ElementAt(0).instance)
+                                        {
+                                             result.sourceCard = card;//get highest
+                                             return result;
+                                        }
+                                   }
+                              }
+                              throw new ArgumentNullException("didn't find actual card with the same instance as temp");
+                              //break;
+                         }
+                    case ValuesRepository.TACTIC_AVERAGE_WIN:
+                         {
+                              List<CardSlot> hand = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   CardSlot temp = new CardSlot();
+                                   temp.instance = card.instance;//to match GUID
+                                   hand.Add(temp);
+                              }
+
+                              foreach (CardSlot temp in hand)
+                              {
+                                   temp.power = ValuesRepository.getPowerChange(temp);
+                              }
+
+                              List<CardSlot> SortedHand = hand.OrderBy(o => o.power).ToList();
+                              List<CardSlot> Average = new List<CardSlot>();
+                              foreach (CardSlot c in SortedHand)
+                              {
+                                   if (c.power > Math.Abs(deltaScores))
+                                   {
+                                        Average.Add(c);
+                                   }
+                              }
+                              if (Average.Count > 0)
+                              {
+                                   foreach (CardSlot card in P2HandHolder)
+                                   {
+                                        if (card.instance == Average.ElementAt(random.Next(1, Average.Count)).instance)
+                                        {
+                                             result.sourceCard = card;
+                                             return result;
+                                        }
+                                   }
+                              }
+                              throw new ArgumentNullException("didn't find actual card with the same instance as temp");
+                              //break;
+                         }
+                    case ValuesRepository.TACTIC_MINIMAL_WIN:
+                         {
+                              List<CardSlot> hand = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   CardSlot temp = new CardSlot();
+                                   temp.instance = card.instance;//to match GUID
+                                   temp.template = card.template;
+                                   temp.owningPlayer = ValuesRepository.PLAYER_2;
+                                   hand.Add(temp);
+                              }
+
+                              foreach (CardSlot temp in hand)
+                              {
+                                   temp.power = ValuesRepository.getPowerChange(temp);
+                              }
+
+                              List<CardSlot> SortedHand = hand.OrderBy(o => o.power).ToList();
+                              List<CardSlot> Average = new List<CardSlot>();
+                              foreach (CardSlot c in SortedHand)
+                              {
+                                   if (c.power > Math.Abs(deltaScores))
+                                   {
+                                        Average.Add(c);
+                                   }
+                              }
+                              if (Average.Count > 0)
+                              {
+                                   foreach (CardSlot card in P2HandHolder)
+                                   {
+                                        if (card.instance == Average.ElementAt(0).instance)
+                                        {
+                                             result.sourceCard = card;//pick the first bigger than Delta score
+                                             return result;
+                                        }
+                                   }
+                              }
+                              throw new ArgumentNullException("didn't find actual card with the same instance as temp");
+                              //break;
+                         }
+                    case ValuesRepository.TACTIC_JUST_WAIT:
+                         {
+                              if (P2HandHolder.Count == 0)
+                              {
+                                   return null;
+                              }
+                              throw new ArgumentException("tactic just wait was chosen, why?");
+                              //return result;
+                         }
+                    case ValuesRepository.TACTIC_WAIT_DUMMY:
+                         {
+                              //get DUMMY/DUMMIES if any
+                              List<CardSlot> dummies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_UnsummonDummy))
+                                   {
+                                        dummies.Add(card);
+                                   }
+                              }
+
+                              if (dummies.Count > 0)//no need to sort
+                              {
+                                   result.sourceCard = dummies.ElementAt(0);
+                                   //sort descending the creatures on the AI board, and get the highest
+                                   List<CardSlot> AIBoard = ValuesRepository.playerBoardCreatures(ValuesRepository.PLAYER_2);
+                                   if (AIBoard.Count > 0)
+                                   {
+                                        CardSlot target = AIBoard.OrderByDescending(o => o.power).ToList().ElementAt(0);
+                                        result.targetCard = target;
+                                   }
+
+                                   return result;
+                              }
+
+                              Console.WriteLine("tactic wait dummy, but there is no dummy, huh?");
+                              break;
+                         }
+                    case ValuesRepository.TACTIC_SPY:
+                         {
+                              //get SPY/SPIES if any
+                              List<CardSlot> spies = new List<CardSlot>();
+                              foreach (CardSlot card in P2HandHolder)
+                              {
+                                   if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_Draw2))
+                                   {
+                                        spies.Add(card);
+                                   }
+                              }
+
+                              //Sort ascending the list if multiple spies, and pick hero or smallest?
+                              if (spies.Count > 0)
+                              {
+                                   List<CardSlot> SortedSpies = spies.OrderBy(o => o.power).ToList();
+                                   result.sourceCard = SortedSpies.ElementAt(0);
+                                   return result;
+                              }
+
+                              break;
+                         }
+               }
+               //Outside the switch, try and use a spy
+               if (AIAttitude != ValuesRepository.TACTIC_PASS &&
+                    AIAttitude != ValuesRepository.TACTIC_MINIMIZE_WIN)
+               {
+                    //get SPY/SPIES if any
+                    List<CardSlot> spies = new List<CardSlot>();
+                    foreach (CardSlot card in P2HandHolder)
+                    {
+                         if (ValuesRepository.cardHasEffect(card, ValuesRepository.CardEffect_Draw2))
+                         {
+                              spies.Add(card);
+                         }
+                    }
+
+                    //Sort ascending the list if multiple spies, and pick hero or smallest?
+                    if (spies.Count > 0)
+                    {
+                         List<CardSlot> SortedSpies = spies.OrderBy(o => o.power).ToList();
+                         result.sourceCard = SortedSpies.ElementAt(0);
+                         return result;
+                    }
+               }
+
+               return null;
+          }
+
+          private void RecalculateScore()
+          {
+               P1MeleeScore = 0;
+               P1RangeScore = 0;
+               P1SiegeScore = 0;
+
+               if (P1MeleeHolder != null && P1MeleeHolder.Count > 0)
+               {
+                    foreach (CardSlot card in P1MeleeHolder)
+                    {
+                         P1MeleeScore += card.power;
+                    }
+               }
+               if (P1RangeHolder != null && P1RangeHolder.Count > 0)
+               {
+                    foreach (CardSlot card in P1RangeHolder)
+                    {
+                         P1RangeScore += card.power;
+                    }
+               }
+               if (P1SiegeHolder != null && P1SiegeHolder.Count > 0)
+               {
+                    foreach (CardSlot card in P1SiegeHolder)
+                    {
+                         P1SiegeScore += card.power;
+                    }
+               }
+
+               P2MeleeScore = 0;
+               P2RangeScore = 0;
+               P2SiegeScore = 0;
+
+               if (P2MeleeHolder != null && P2MeleeHolder.Count > 0)
+               {
+                    foreach (CardSlot card in P2MeleeHolder)
+                    {
+                         P2MeleeScore += card.power;
+                    }
+               }
+               if (P2RangeHolder != null && P2RangeHolder.Count > 0)
+               {
+                    foreach (CardSlot card in P2RangeHolder)
+                    {
+                         P2RangeScore += card.power;
+                    }
+               }
+               if (P2SiegeHolder != null && P2SiegeHolder.Count > 0)
+               {
+                    foreach (CardSlot card in P2SiegeHolder)
+                    {
+                         P2SiegeScore += card.power;
+                    }
+               }
+
+               P1Score = P1MeleeScore + P1RangeScore + P1SiegeScore;
+               P2Score = P2MeleeScore + P2RangeScore + P2SiegeScore;
+
+               currentPlayerScores[ValuesRepository.PLAYER_1] = P1Score;
+               currentPlayerScores[ValuesRepository.PLAYER_2] = P2Score;
           }
 
           //sidekick
@@ -1047,6 +1497,102 @@ namespace Gwent.ViewModels
           static Func<ObservableCollection<CardSlot>> _P2MeleeModifHolderDefaultValueFactory = null;
           #endregion
 
+          public int P1Score
+          {
+               get { return _P1ScoreLocator(this).Value; }
+               set { _P1ScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P1Score Setup
+          protected Property<int> _P1Score = new Property<int> { LocatorFunc = _P1ScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P1ScoreLocator = RegisterContainerLocator<int>("P1Score", model => model.Initialize("P1Score", ref model._P1Score, ref _P1ScoreLocator, _P1ScoreDefaultValueFactory));
+          static Func<int> _P1ScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P1MeleeScore
+          {
+               get { return _P1MeleeScoreLocator(this).Value; }
+               set { _P1MeleeScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P1MeleeScore Setup
+          protected Property<int> _P1MeleeScore = new Property<int> { LocatorFunc = _P1MeleeScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P1MeleeScoreLocator = RegisterContainerLocator<int>("P1MeleeScore", model => model.Initialize("P1MeleeScore", ref model._P1MeleeScore, ref _P1MeleeScoreLocator, _P1MeleeScoreDefaultValueFactory));
+          static Func<int> _P1MeleeScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P1RangeScore
+          {
+               get { return _P1RangeScoreLocator(this).Value; }
+               set { _P1RangeScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P1RangeScore Setup
+          protected Property<int> _P1RangeScore = new Property<int> { LocatorFunc = _P1RangeScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P1RangeScoreLocator = RegisterContainerLocator<int>("P1RangeScore", model => model.Initialize("P1RangeScore", ref model._P1RangeScore, ref _P1RangeScoreLocator, _P1RangeScoreDefaultValueFactory));
+          static Func<int> _P1RangeScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P1SiegeScore
+          {
+               get { return _P1SiegeScoreLocator(this).Value; }
+               set { _P1SiegeScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P1SiegeScore Setup
+          protected Property<int> _P1SiegeScore = new Property<int> { LocatorFunc = _P1SiegeScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P1SiegeScoreLocator = RegisterContainerLocator<int>("P1SiegeScore", model => model.Initialize("P1SiegeScore", ref model._P1SiegeScore, ref _P1SiegeScoreLocator, _P1SiegeScoreDefaultValueFactory));
+          static Func<int> _P1SiegeScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P2Score
+          {
+               get { return _P2ScoreLocator(this).Value; }
+               set { _P2ScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P2Score Setup
+          protected Property<int> _P2Score = new Property<int> { LocatorFunc = _P2ScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P2ScoreLocator = RegisterContainerLocator<int>("P2Score", model => model.Initialize("P2Score", ref model._P2Score, ref _P2ScoreLocator, _P2ScoreDefaultValueFactory));
+          static Func<int> _P2ScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P2MeleeScore
+          {
+               get { return _P2MeleeScoreLocator(this).Value; }
+               set { _P2MeleeScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P2MeleeScore Setup
+          protected Property<int> _P2MeleeScore = new Property<int> { LocatorFunc = _P2MeleeScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P2MeleeScoreLocator = RegisterContainerLocator<int>("P2MeleeScore", model => model.Initialize("P2MeleeScore", ref model._P2MeleeScore, ref _P2MeleeScoreLocator, _P2MeleeScoreDefaultValueFactory));
+          static Func<int> _P2MeleeScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P2RangeScore
+          {
+               get { return _P2RangeScoreLocator(this).Value; }
+               set { _P2RangeScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P2RangeScore Setup
+          protected Property<int> _P2RangeScore = new Property<int> { LocatorFunc = _P2RangeScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P2RangeScoreLocator = RegisterContainerLocator<int>("P2RangeScore", model => model.Initialize("P2RangeScore", ref model._P2RangeScore, ref _P2RangeScoreLocator, _P2RangeScoreDefaultValueFactory));
+          static Func<int> _P2RangeScoreDefaultValueFactory = null;
+          #endregion
+
+          public int P2SiegeScore
+          {
+               get { return _P2SiegeScoreLocator(this).Value; }
+               set { _P2SiegeScoreLocator(this).SetValueAndTryNotify(value); }
+          }
+
+          #region Property int P2SiegeScore Setup
+          protected Property<int> _P2SiegeScore = new Property<int> { LocatorFunc = _P2SiegeScoreLocator };
+          static Func<BindableBase, ValueContainer<int>> _P2SiegeScoreLocator = RegisterContainerLocator<int>("P2SiegeScore", model => model.Initialize("P2SiegeScore", ref model._P2SiegeScore, ref _P2SiegeScoreLocator, _P2SiegeScoreDefaultValueFactory));
+          static Func<int> _P2SiegeScoreDefaultValueFactory = null;
+          #endregion
+
           public double ObservedHeight
           {
                get { return _ObservedHeightLocator(this).Value; }
@@ -1150,6 +1696,14 @@ namespace Gwent.ViewModels
                     else
                     {
                          CurrentState = "P1 Turn";
+                         //reenable P1 Hand
+                         if (P1HandHolder != null && P1HandHolder.Count > 0)
+                         {
+                              foreach (CardSlot card in P1HandHolder)
+                              {
+                                   card.IsTransactionReady = true;
+                              }
+                         }
                          //TO DO implement AI
                     }
                }
